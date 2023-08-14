@@ -4,7 +4,11 @@
   "description": "A tool for generating NFT collections from traits",
   "scripts": {
     "start": "npx ts-node --files ./src/index.ts",
-    "lint": "eslint . --ext .ts"
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "npm run compile"
   },
   "keywords": [
     "nft generator",
@@ -17,6 +21,7 @@
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
     "eslint": "^8.46.0",
+    "gts": "^5.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   },

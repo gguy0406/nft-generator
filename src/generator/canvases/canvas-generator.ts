@@ -1,8 +1,12 @@
-import { Image, createCanvas } from 'canvas';
+import {Image, createCanvas} from 'canvas';
 
-import { AllElementImage, TraitSet } from '../interfaces';
+import {AllElementImage, TraitSet} from '../interfaces';
 
-export function generateCanvas(set: TraitSet, imgs: AllElementImage, imgSize: number = 545) {
+export function generateCanvas(
+  set: TraitSet,
+  imgs: AllElementImage,
+  imgSize: number = 545
+) {
   const canvas = createCanvas(imgSize, imgSize);
   const ctx = canvas.getContext('2d');
   const allLayers: {[zIndex: string]: Image} = {};
@@ -12,11 +16,12 @@ export function generateCanvas(set: TraitSet, imgs: AllElementImage, imgSize: nu
       allLayers[zIndex] = imgs[layer];
     }
 
-    Object
-      .keys(allLayers)
-      .map((zIndex) => Number(zIndex))
+    Object.keys(allLayers)
+      .map(zIndex => Number(zIndex))
       .sort()
-      .forEach((zIndex) => { ctx.drawImage(allLayers[zIndex], 0, 0, imgSize, imgSize); });
+      .forEach(zIndex => {
+        ctx.drawImage(allLayers[zIndex], 0, 0, imgSize, imgSize);
+      });
   }
 
   return canvas;

@@ -1,10 +1,14 @@
-import { Canvas } from 'canvas';
+import {Canvas} from 'canvas';
 
-import { AllElementImage, CollectionSetting, TraitSet } from '../interfaces';
+import {AllElementImage, CollectionSetting, TraitSet} from '../interfaces';
 
-import { generateCanvas } from './canvas-generator';
+import {generateCanvas} from './canvas-generator';
 
-export function generateCanvases(sets: TraitSet[], imgs: AllElementImage, setting: CollectionSetting) {
+export function generateCanvases(
+  sets: TraitSet[],
+  imgs: AllElementImage,
+  setting: CollectionSetting
+) {
   const segmentSize = setting.segmentSize || 100;
   const segments: TraitSet[][] = [];
 
@@ -19,7 +23,9 @@ export function generateCanvases(sets: TraitSet[], imgs: AllElementImage, settin
 
   for (const segment of segments) {
     console.time();
-    segment.forEach((set) => { canvases.push(generateCanvas(set, imgs, setting.imgSize)); });
+    segment.forEach(set => {
+      canvases.push(generateCanvas(set, imgs, setting.imgSize));
+    });
     console.timeEnd();
   }
 
