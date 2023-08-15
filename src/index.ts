@@ -1,6 +1,6 @@
 import {loadImage} from 'canvas';
 import {existsSync, mkdirSync} from 'node:fs';
-import {readFile, readdir, writeFile} from 'node:fs/promises';
+import {readFile, readdir} from 'node:fs/promises';
 import * as path from 'path';
 
 import {
@@ -10,8 +10,8 @@ import {
 } from './generator/interfaces';
 import * as multiplication from './generator/sets/multiplication';
 import * as randomization from './generator/sets/randomization';
-import * as batch from './generator/canvases/batch';
-import * as sequential from './generator/canvases/sequential';
+import * as batch from './generator/images/batch';
+import * as sequential from './generator/images/sequential';
 
 const directory = path.join(__dirname, 'collection');
 
@@ -28,27 +28,18 @@ const directory = path.join(__dirname, 'collection');
         );
   console.timeEnd('generate sets');
 
-  console.time('get all img');
-  const imgs = await getAllElementImage(elements);
-  console.timeEnd('get all img');
-  console.time('generate canvases');
-  const canvases =
-    setting.canvasesGenerator === 'batch'
-      ? batch.generateCanvases(sets, imgs, setting)
-      : sequential.generateCanvases(sets, imgs, setting);
-  console.timeEnd('generate canvases');
+  console.time('preload all element image');
+  const imgDict = await getAllElementImage(elements);
+  console.timeEnd('preload all element image');
 
   !existsSync(path.join(directory, 'output', 'images')) &&
     mkdirSync(path.join(directory, 'output', 'images'), {recursive: true});
 
-  console.time('save file png');
-  for (const [index, canvas] of canvases.entries()) {
-    await writeFile(
-      path.join(directory, 'output', 'images', `${index}.png`),
-      canvas.toBuffer()
-    );
-  }
-  console.timeEnd('save file png');
+  console.time('generate images');
+  setting.imagesGenerator === 'batch'
+    ? await batch.generateImages(directory, sets, imgDict, setting)
+    : await sequential.generateImages(directory, sets, imgDict, setting);
+  console.timeEnd('generate images');
 })();
 
 async function getCollectionInfo() {
@@ -58,7 +49,7 @@ async function getCollectionInfo() {
   const layerRegex = /\.\d+$/;
   const elements: ElementLayers[][] = await Promise.all(
     traits.map(async (trait, traitIndex) => {
-      const elementKeyByName: {[element: string]: ElementLayers['layers']} = {};
+      const elementDict: {[element: string]: ElementLayers['layers']} = {};
 
       (await readdir(path.join(directory, 'traits', trait))).forEach(
         fileName => {
@@ -67,21 +58,21 @@ async function getCollectionInfo() {
             Number(element.match(layerRegex)?.[0].substring(1)) ||
             traitIndex * 100;
 
-          if (elementKeyByName[element])
-            elementKeyByName[element][layerZIndex] = path.join(
+          if (elementDict[element])
+            elementDict[element][layerZIndex] = path.join(
               directory,
               'traits',
               trait,
               fileName
             );
           else
-            elementKeyByName[element] = {
+            elementDict[element] = {
               [layerZIndex]: path.join(directory, 'traits', trait, fileName),
             };
         }
       );
 
-      return Object.entries(elementKeyByName).map(([element, layers]) => ({
+      return Object.entries(elementDict).map(([element, layers]) => ({
         layers,
         name: element,
       }));
@@ -98,18 +89,18 @@ async function getCollectionInfo() {
 }
 
 async function getAllElementImage(elements: ElementLayers[][]) {
-  const imgs: AllElementImage = {};
+  const imgDict: AllElementImage = {};
 
   await Promise.all(
     elements.flat().map(
       async element =>
         await Promise.all(
           Object.values(element.layers).map(async filePath => {
-            imgs[filePath] = await loadImage(filePath);
+            imgDict[filePath] = await loadImage(filePath);
           })
         )
     )
   );
 
-  return imgs;
+  return imgDict;
 }

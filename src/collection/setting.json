@@ -1,5 +1,6 @@
 {
 	"imgSize": 1090,
 	"setsGenerator": "multiplication",
-	"canvasesGenerator": "batch"
+	"imagesGenerator": "batch",
+	"batchSize": 2000
 }

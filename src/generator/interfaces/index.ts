@@ -7,7 +7,7 @@ export type AllElementImage = Record<string, Image>;
 export interface CollectionSetting {
   imgSize: number;
   setsGenerator: 'multiplication' | 'randomization';
-  canvasesGenerator: 'batch' | 'sequential';
+  imagesGenerator: 'batch' | 'sequential';
   randomTimes?: number;
   batchSize?: number;
 }
