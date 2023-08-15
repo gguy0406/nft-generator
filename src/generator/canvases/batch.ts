@@ -9,24 +9,22 @@ export function generateCanvases(
   imgs: AllElementImage,
   setting: CollectionSetting
 ) {
-  const segmentSize = setting.segmentSize || 100;
-  const segments: TraitSet[][] = [];
+  const batchSize = setting.batchSize || 100;
+  const batches: TraitSet[][] = [];
 
   sets.forEach((set, index) => {
-    const segment = Math.floor(index / segmentSize);
+    const batch = Math.floor(index / batchSize);
 
-    if (segments[segment]) segments[segment].push(set);
-    else segments[segment] = [set];
+    if (batches[batch]) batches[batch].push(set);
+    else batches[batch] = [set];
   });
 
   const canvases: Canvas[] = [];
 
-  for (const segment of segments) {
-    console.time();
-    segment.forEach(set => {
+  for (const batch of batches) {
+    batch.forEach(set => {
       canvases.push(generateCanvas(set, imgs, setting.imgSize));
     });
-    console.timeEnd();
   }
 
   return canvases;

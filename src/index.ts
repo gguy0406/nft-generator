@@ -10,39 +10,45 @@ import {
 } from './generator/interfaces';
 import * as multiplication from './generator/sets/multiplication';
 import * as randomization from './generator/sets/randomization';
-import * as segment from './generator/canvases/segment';
-import * as sequence from './generator/canvases/sequence';
+import * as batch from './generator/canvases/batch';
+import * as sequential from './generator/canvases/sequential';
 
 const directory = path.join(__dirname, 'collection');
 
 (async () => {
   const {traits, elements, setting} = await getCollectionInfo();
-  // eslint-disable-next-line no-constant-condition
-  const sets = false // Math.floor(Math.random() + 1) // TODO: stdin
-    ? multiplication.generateSets(traits, elements)
-    : randomization.generateSets(
-        traits,
-        elements,
-        setting.randomTimes || Math.random() * 10
-      );
+  console.time('generate sets');
+  const sets =
+    setting.setsGenerator === 'multiplication'
+      ? multiplication.generateSets(traits, elements)
+      : randomization.generateSets(
+          traits,
+          elements,
+          setting.randomTimes || Math.random() * 20
+        );
+  console.timeEnd('generate sets');
 
+  console.time('get all img');
   const imgs = await getAllElementImage(elements);
-  // eslint-disable-next-line no-constant-condition
-  const canvases = false // Math.floor(Math.random() + 1) // TODO: stdin
-    ? segment.generateCanvases(sets, imgs, setting)
-    : sequence.generateCanvases(sets, imgs, setting);
+  console.timeEnd('get all img');
+  console.time('generate canvases');
+  const canvases =
+    setting.canvasesGenerator === 'batch'
+      ? batch.generateCanvases(sets, imgs, setting)
+      : sequential.generateCanvases(sets, imgs, setting);
+  console.timeEnd('generate canvases');
 
   !existsSync(path.join(directory, 'output', 'images')) &&
     mkdirSync(path.join(directory, 'output', 'images'), {recursive: true});
 
-  console.log(canvases);
-  // return;
+  console.time('save file png');
   for (const [index, canvas] of canvases.entries()) {
     await writeFile(
       path.join(directory, 'output', 'images', `${index}.png`),
       canvas.toBuffer()
     );
   }
+  console.timeEnd('save file png');
 })();
 
 async function getCollectionInfo() {
@@ -95,13 +101,14 @@ async function getAllElementImage(elements: ElementLayers[][]) {
   const imgs: AllElementImage = {};
 
   await Promise.all(
-    elements.flat().map(async element => {
-      await Promise.all(
-        Object.entries(element.layers).map(async ([, filePath]) => {
-          imgs[filePath] = await loadImage(filePath);
-        })
-      );
-    })
+    elements.flat().map(
+      async element =>
+        await Promise.all(
+          Object.values(element.layers).map(async filePath => {
+            imgs[filePath] = await loadImage(filePath);
+          })
+        )
+    )
   );
 
   return imgs;
