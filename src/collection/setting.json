@@ -1,6 +1,6 @@
 {
 	"imgSize": 1090,
-	"setsGenerator": "multiplication",
-	"imagesGenerator": "batch",
+	"setsGenerator": "randomization",
+	"imagesGenerator": "sequential",
 	"batchSize": 2000
 }

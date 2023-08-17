@@ -1,7 +1,5 @@
 import {ElementLayers, TraitSet} from '../interfaces';
 
-import * as randomization from './randomization';
-
 export function generateSets(
   traits: string[],
   elements: ElementLayers[][],
@@ -12,23 +10,7 @@ export function generateSets(
 
   if (memoSet[trait]) return memoSet[trait];
 
-  let currentSet: TraitSet[];
-
-  if (trait === 'Background' || trait === 'Ear') {
-    const randomElement =
-      elements[traitIndex][
-        Math.floor(Math.random() * elements[traitIndex].length)
-      ];
-
-    currentSet = elements[traitIndex + 1]
-      ? generateSets(traits, elements, traitIndex + 1, memoSet).map(set => ({
-          ...set,
-          [trait]: randomElement,
-        }))
-      : [{[trait]: randomElement}];
-  }
-
-  currentSet = elements[traitIndex + 1]
+  const currentSet = elements[traitIndex + 1]
     ? elements[traitIndex].reduce((sets: TraitSet[], element) => {
         // TODO: implement element constraint
         generateSets(traits, elements, traitIndex + 1, memoSet).forEach(

@@ -53,10 +53,11 @@ async function getCollectionInfo() {
 
       (await readdir(path.join(directory, 'traits', trait))).forEach(
         fileName => {
-          const element = path.basename(fileName, path.extname(fileName));
+          const layerName = path.basename(fileName, path.extname(fileName));
+          const element = layerName.replace(layerRegex, '');
           const layerZIndex =
-            Number(element.match(layerRegex)?.[0].substring(1)) ||
-            traitIndex * 100;
+            Number(layerName.match(layerRegex)?.[0].substring(1)) ||
+            traitIndex * 200;
 
           if (elementDict[element])
             elementDict[element][layerZIndex] = path.join(
