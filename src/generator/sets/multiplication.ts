@@ -1,7 +1,5 @@
 import {ElementLayers, TraitSet} from '../interfaces';
 
-import * as randomization from './randomization';
-
 export function generateSets(
   traits: string[],
   elements: ElementLayers[][],
@@ -15,31 +13,45 @@ export function generateSets(
   let currentSet: TraitSet[];
 
   if (trait === 'Background' || trait === 'Ear') {
-    const randomElement =
-      elements[traitIndex][
-        Math.floor(Math.random() * elements[traitIndex].length)
-      ];
+    currentSet = traits[traitIndex + 1]
+      ? generateSets(traits, elements, traitIndex + 1, memoSet)
+      : [];
+  } else if (traits[traitIndex + 1]) {
+    const smallerSets = generateSets(traits, elements, traitIndex + 1, memoSet);
 
-    currentSet = elements[traitIndex + 1]
-      ? generateSets(traits, elements, traitIndex + 1, memoSet).map(set => ({
-          ...set,
-          [trait]: randomElement,
-        }))
-      : [{[trait]: randomElement}];
+    // TODO: implement element constraint
+    currentSet = smallerSets.length
+      ? elements[traitIndex].reduce((sets: TraitSet[], element) => {
+          smallerSets.forEach(smallerSet => {
+            sets.push({...smallerSet, [trait]: element});
+          });
+
+          return sets;
+        }, [])
+      : elements[traitIndex].map(element => ({[trait]: element}));
+  } else {
+    currentSet = elements[traitIndex].map(element => ({[trait]: element}));
   }
 
-  currentSet = elements[traitIndex + 1]
-    ? elements[traitIndex].reduce((sets: TraitSet[], element) => {
-        // TODO: implement element constraint
-        generateSets(traits, elements, traitIndex + 1, memoSet).forEach(
-          smallerSet => sets.push({...smallerSet, [trait]: element})
-        );
+  if (traitIndex === 0) {
+    const bgTraitIndex = traits.findIndex(trait => trait === 'Background');
+    const earIndex = traits.findIndex(trait => trait === 'Ear');
 
-        return sets;
-      }, [])
-    : elements[traitIndex].map(element => ({[trait]: element}));
+    currentSet.map(set => {
+      set['Background'] =
+        elements[bgTraitIndex][
+          Math.floor(Math.random() * elements[bgTraitIndex].length)
+        ];
+      set['Ear'] =
+        elements[earIndex][
+          Math.floor(Math.random() * elements[earIndex].length)
+        ];
 
-  if (traitIndex === 0) return currentSet;
+      return set;
+    });
+
+    return currentSet;
+  }
 
   return (memoSet[trait] ||= currentSet);
 }

@@ -3,7 +3,7 @@ import {ElementLayers, TraitSet} from '../interfaces';
 export function generateSets(
   traits: string[],
   elements: ElementLayers[][],
-  quantity: number = 1
+  quantity: number
 ): TraitSet[] {
   const sets: TraitSet[] = [];
 
