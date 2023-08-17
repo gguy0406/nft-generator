@@ -1,11 +1,11 @@
-import {AllElementImage, CollectionSetting, TraitSet} from '../interfaces';
+import {ImageDictionary, CollectionSetting, TraitSet} from '../interfaces';
 
 import {generateCanvas, saveImage} from './common';
 
 export async function generateImages(
   directory: string,
   sets: TraitSet[],
-  imgs: AllElementImage,
+  imgs: ImageDictionary,
   setting: CollectionSetting
 ) {
   const batchSize = setting.batchSize || 1000;
