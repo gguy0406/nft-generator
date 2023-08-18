@@ -23,7 +23,6 @@ const directory = path.join(__dirname, 'collection');
   console.time('generate sets');
   const sets = getSets(setting, traits, elements);
   console.timeEnd('generate sets');
-  console.log(sets.length);
 
   console.time('preload all element image');
   const imgDict = await getImgDict(elements);

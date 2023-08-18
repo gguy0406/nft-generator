@@ -20,16 +20,12 @@ export function generateCanvas(
     }
   }
 
-  try {
-    Object.keys(allLayers)
-      .map(zIndex => Number(zIndex))
-      .sort((a, b) => a - b)
-      .forEach(zIndex => {
-        ctx.drawImage(allLayers[zIndex], 0, 0, imgSize, imgSize);
-      });
-  } catch {
-    console.log(skinColor);
-  }
+  Object.keys(allLayers)
+    .map(zIndex => Number(zIndex))
+    .sort((a, b) => a - b)
+    .forEach(zIndex => {
+      ctx.drawImage(allLayers[zIndex], 0, 0, imgSize, imgSize);
+    });
 
   return canvas;
 }
