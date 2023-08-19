@@ -17,7 +17,7 @@ import * as randomization from './generator/sets/randomization';
 import * as batch from './generator/images/batch';
 import * as sequential from './generator/images/sequential';
 
-import {collectionDir, outputImageDir, outputMetadataDir} from './lib';
+import {traitsDir, outputImageDir, outputMetadataDir} from './lib';
 
 if (setting.removeOutputs) {
   try {
@@ -27,6 +27,9 @@ if (setting.removeOutputs) {
     /* empty */
   }
 }
+
+!existsSync(outputImageDir) && mkdirSync(outputImageDir, {recursive: true});
+!existsSync(outputMetadataDir) && mkdirSync(outputMetadataDir);
 
 (async () => {
   console.time('Initialize collection');
@@ -43,20 +46,19 @@ if (setting.removeOutputs) {
 })();
 
 async function initializeCollection() {
-  const traitsPath = path.join(collectionDir, 'traits');
   const imgExts = ['.png', '.svg'];
   const layerRegex = /\.\d+$/;
   const filePaths: string[] = [];
 
   const traits: string[] =
     setting.traits ||
-    (await readdir(traitsPath, {withFileTypes: true}))
+    (await readdir(traitsDir, {withFileTypes: true}))
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
 
   const elements: ElementLayers[][] = await Promise.all(
     traits.map(async (trait, traitIndex) => {
-      const traitPath = path.join(traitsPath, trait);
+      const traitPath = path.join(traitsDir, trait);
       const elementDict: {[element: string]: ElementLayers['layers']} = {};
 
       (await readdir(traitPath, {withFileTypes: true}))
@@ -164,10 +166,6 @@ function generateImages(
   sets: TraitSet[],
   imgDict: ImageDictionary
 ) {
-  const outputDirectory = path.join(collectionDir, 'output', 'images');
-
-  !existsSync(outputDirectory) && mkdirSync(outputDirectory, {recursive: true});
-
   switch (setting.imgsGenerator) {
     case 'batch':
       return batch.generateImages(sets, imgDict, setting);

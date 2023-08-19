@@ -20,4 +20,4 @@
 node_modules/
 
 # Project
-src/collection/output/
+output/
