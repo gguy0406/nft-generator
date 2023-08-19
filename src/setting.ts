@@ -1,6 +1,23 @@
-import {CollectionSetting} from '../generator/interfaces';
+export interface GeneratorSetting {
+  removeOutputs?: boolean;
+  indexStep?: number;
+  imgSize?: number;
+  resolution?: number;
+  randomTimes?: number;
+  batchSize?: number;
+  setsGenerator?: 'multiplication' | 'randomization';
+  imgsGenerator?: 'batch' | 'sequential';
+  traits?: string[];
+  syncColor?: ColorSetting;
+}
 
-export const setting: CollectionSetting = {
+export interface ColorSetting {
+  types: string[];
+  defaultSet: Record<ColorSetting['types'][number], string>;
+  colorSets: Array<ColorSetting['defaultSet']>;
+}
+
+export const setting: GeneratorSetting = {
   removeOutputs: true,
   imgSize: 2000,
   resolution: 150,

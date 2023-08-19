@@ -1,4 +1,4 @@
-import {ElementLayers, TraitSet} from '../interfaces';
+import {ElementLayers, TraitSet} from '../interface';
 
 export function generateSets(
   traits: string[],

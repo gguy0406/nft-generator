@@ -1,9 +1,9 @@
-import {ElementLayers, TraitSet} from '../interfaces';
+import {ElementLayers, TraitSet} from '../interface';
 
 export function generateSets(
   traits: string[],
   elements: ElementLayers[][],
-  quantity: number
+  quantity: number = 1
 ): TraitSet[] {
   const sets: TraitSet[] = [];
 

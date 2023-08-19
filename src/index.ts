@@ -4,20 +4,21 @@ import * as path from 'path';
 
 import {Image, loadImage} from 'canvas';
 
-import {setting} from './collection/setting';
+import {GeneratorSetting, setting} from './setting';
 
-import {
-  ImageDictionary,
-  CollectionSetting,
-  ElementLayers,
-  TraitSet,
-} from './generator/interfaces';
-import * as multiplication from './generator/sets/multiplication';
-import * as randomization from './generator/sets/randomization';
-import * as batch from './generator/images/batch';
-import * as sequential from './generator/images/sequential';
+import {generateByBatch} from './generator/nft/batch';
+import {generateSequential} from './generator/nft/sequential';
+import * as multiplication from './generator/set/multiplication';
+import * as randomization from './generator/set/randomization';
+import {ImageDictionary, ElementLayers, TraitSet} from './generator/interface';
+import {generateImage} from './generator/nft/image';
+import {generateCanvas} from './generator/canvas';
 
-import {traitsDir, outputImageDir, outputMetadataDir} from './lib';
+const collectionDir = path.join(__dirname, '..', 'collection');
+const traitsDir = path.join(collectionDir, 'traits');
+const outputDir = path.join(collectionDir, 'output');
+const outputImageDir = path.join(outputDir, 'images');
+const outputMetadataDir = path.join(outputDir, 'metadata');
 
 if (setting.removeOutputs) {
   try {
@@ -41,7 +42,7 @@ if (setting.removeOutputs) {
   console.timeEnd('Generate sets');
 
   console.time('Generate images');
-  await generateImages(setting, sets, imgDict);
+  await generateNFTs(setting, sets, imgDict);
   console.timeEnd('Generate images');
 })();
 
@@ -144,7 +145,7 @@ async function initializeCollection() {
 }
 
 function generateSets(
-  setting: CollectionSetting,
+  setting: GeneratorSetting,
   traits: string[],
   elements: ElementLayers[][]
 ) {
@@ -161,16 +162,33 @@ function generateSets(
   }
 }
 
-function generateImages(
-  setting: CollectionSetting,
+function generateNFTs(
+  setting: GeneratorSetting,
   sets: TraitSet[],
   imgDict: ImageDictionary
 ) {
+  const cb = (set: TraitSet, index: number) => {
+    return Promise.all([
+      generateImage(
+        path.join(outputImageDir, `${index + 1}.png`),
+        generateCanvas(
+          set,
+          imgDict,
+          setting.imgSize,
+          setting.syncColor
+            ? Math.floor(Math.random() * setting.syncColor.colorSets.length)
+            : 0
+        ),
+        setting.resolution ? {resolution: setting.resolution} : undefined
+      ),
+    ]);
+  };
+
   switch (setting.imgsGenerator) {
     case 'batch':
-      return batch.generateImages(sets, imgDict, setting);
+      return generateByBatch(sets, cb, setting.batchSize);
     case 'sequential':
     default:
-      return sequential.generateImages(sets, imgDict);
+      return generateSequential(sets, cb);
   }
 }
