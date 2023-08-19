@@ -1,9 +1,9 @@
+import {generateCanvas} from '../canvas';
 import {ImageDictionary, CollectionSetting, TraitSet} from '../interfaces';
 
-import {generateCanvas, saveImage} from './common';
+import {saveImage} from './common';
 
 export async function generateImages(
-  directory: string,
   sets: TraitSet[],
   imgs: ImageDictionary,
   setting: CollectionSetting
@@ -24,11 +24,7 @@ export async function generateImages(
 
       return Promise.all(
         currentBatch.map(async (set, index) =>
-          saveImage(
-            directory,
-            `${index + 1}.png`,
-            generateCanvas(set, imgs, setting.imgSize)
-          )
+          saveImage(`${index + 1}.png`, generateCanvas(set, imgs))
         )
       );
     },

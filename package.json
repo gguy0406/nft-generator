@@ -11,7 +11,8 @@
   },
   "keywords": [
     "nft generator",
-    "nodejs"
+    "nodejs",
+    "typescript"
   ],
   "author": "Trung D. Ngo",
   "license": "ISC",

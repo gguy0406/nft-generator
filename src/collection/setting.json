@@ -1,7 +1,0 @@
-{
-	"imgSize": 2000,
-	"setsGenerator": "randomization",
-	"imagesGenerator": "sequential",
-	"randomTimes": 20,
-	"batchSize": 2000
-}

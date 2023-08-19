@@ -2,72 +2,66 @@ import {existsSync, mkdirSync} from 'node:fs';
 import {readFile, readdir} from 'node:fs/promises';
 import * as path from 'path';
 
-import {loadImage} from 'canvas';
+import {Image, loadImage} from 'canvas';
+
+import {setting} from './collection/setting';
 
 import {
   ImageDictionary,
   CollectionSetting,
-  ColorSetting,
   ElementLayers,
+  TraitSet,
 } from './generator/interfaces';
 import * as multiplication from './generator/sets/multiplication';
 import * as randomization from './generator/sets/randomization';
 import * as batch from './generator/images/batch';
 import * as sequential from './generator/images/sequential';
 
-const directory = path.join(__dirname, 'collection');
+import {collectionDir} from './lib';
 
 (async () => {
-  const {traits, elements, setting} = await getCollectionInfo();
+  console.time('Initialize collection');
+  const {traits, elements, imgDict} = await initializeCollection();
+  console.timeEnd('Initialize collection');
 
-  console.time('generate sets');
-  const sets = getSets(setting, traits, elements);
-  console.timeEnd('generate sets');
+  console.time('Generate sets');
+  const sets = generateSets(setting, traits, elements);
+  console.timeEnd('Generate sets');
 
-  console.time('preload all element image');
-  const imgDict = await getImgDict(elements);
-  console.timeEnd('preload all element image');
-
-  !existsSync(path.join(directory, 'output', 'images')) &&
-    mkdirSync(path.join(directory, 'output', 'images'), {recursive: true});
-
-  console.time('generate images');
-  setting.imagesGenerator === 'batch'
-    ? await batch.generateImages(directory, sets, imgDict, setting)
-    : await sequential.generateImages(directory, sets, imgDict, setting);
-  console.timeEnd('generate images');
+  console.time('Generate images');
+  await generateImages(setting, sets, imgDict);
+  console.timeEnd('Generate images');
 })();
 
-async function getCollectionInfo() {
-  const traits: string[] = JSON.parse(
-    await readFile(path.join(directory, 'ordinal.json'), 'utf-8')
-  );
+async function initializeCollection() {
+  const traitsPath = path.join(collectionDir, 'traits');
   const layerRegex = /\.\d+$/;
+  const filePaths: string[] = [];
+
+  const traits: string[] =
+    setting.traits ||
+    (await readdir(traitsPath, {withFileTypes: true}))
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
   const elements: ElementLayers[][] = await Promise.all(
     traits.map(async (trait, traitIndex) => {
+      const traitPath = path.join(traitsPath, trait);
       const elementDict: {[element: string]: ElementLayers['layers']} = {};
 
-      (await readdir(path.join(directory, 'traits', trait))).forEach(
-        fileName => {
-          const layerName = path.basename(fileName, path.extname(fileName));
-          const element = layerName.replace(layerRegex, '');
-          const layerZIndex =
-            Number(layerName.match(layerRegex)?.[0].substring(1)) ||
-            traitIndex * 200;
+      (await readdir(traitPath)).forEach(fileName => {
+        const filePath = path.join(traitPath, fileName);
+        const layerName = path.basename(fileName, path.extname(fileName));
+        const element = layerName.replace(layerRegex, '');
+        const layerZIndex =
+          Number(layerName.match(layerRegex)?.[0].substring(1)) ||
+          traitIndex * (setting.indexStep || 200);
 
-          if (elementDict[element])
-            elementDict[element][layerZIndex] = path.join(
-              directory,
-              'traits',
-              trait,
-              fileName
-            );
-          else
-            elementDict[element] = {
-              [layerZIndex]: path.join(directory, 'traits', trait, fileName),
-            };
-        }
-      );
+        if (elementDict[element]) elementDict[element][layerZIndex] = filePath;
+        else elementDict[element] = {[layerZIndex]: filePath};
+
+        filePaths.push(filePath);
+      });
 
       return Object.entries(elementDict).map(([element, layers]) => ({
         layers,
@@ -76,16 +70,56 @@ async function getCollectionInfo() {
     })
   );
 
-  return {
-    traits,
-    elements,
-    setting: (JSON.parse(
-      await readFile(path.join(directory, 'setting.json'), 'utf-8')
-    ) || {}) as CollectionSetting,
-  };
+  const imgDict: ImageDictionary = {};
+
+  if (setting.syncColor) {
+    const syncColorSetting = setting.syncColor;
+    const defaultColorRegex: Record<string, RegExp> =
+      syncColorSetting.types.reduce(
+        (regexps, type) => {
+          regexps[type] = new RegExp(syncColorSetting.defaultSet[type], 'g');
+
+          return regexps;
+        },
+        {} as Record<string, RegExp>
+      );
+
+    await Promise.all(
+      filePaths.map(async filePath => {
+        imgDict[filePath] = {};
+
+        return Promise.all(
+          syncColorSetting.colorSets.map(async (colorSet, index) => {
+            let imgFile = await readFile(filePath, {encoding: 'utf-8'});
+            const img = new Image();
+
+            syncColorSetting.types.forEach(type => {
+              imgFile = imgFile.replace(
+                defaultColorRegex[type],
+                colorSet[type]
+              );
+            });
+
+            img.src = 'data:image/svg+xml;charset=utf-8,' + imgFile;
+            imgDict[filePath][index] = img;
+          })
+        );
+      })
+    );
+  } else {
+    await Promise.all(
+      filePaths.map(async filePath => {
+        imgDict[filePath] = {};
+
+        imgDict[filePath][0] = await loadImage(filePath);
+      })
+    );
+  }
+
+  return {traits, elements, imgDict};
 }
 
-function getSets(
+function generateSets(
   setting: CollectionSetting,
   traits: string[],
   elements: ElementLayers[][]
@@ -94,58 +128,29 @@ function getSets(
     case 'multiplication':
       return multiplication.generateSets(traits, elements);
     case 'randomization':
+    default:
       return randomization.generateSets(
         traits,
         elements,
         setting.randomTimes || Math.random() * 20
       );
-    default:
-      return multiplication.generateSets(traits, elements);
   }
 }
 
-async function getImgDict(elements: ElementLayers[][]) {
-  const imgDict: ImageDictionary = {};
-  const colorSetting = JSON.parse(
-    await readFile(path.join(directory, 'skin-color.json'), 'utf-8')
-  ) as ColorSetting;
-  const defaultColorRegex: Record<string, RegExp> = colorSetting.types.reduce(
-    (regexps, type) => {
-      regexps[type] = new RegExp(colorSetting.defaultSet[type], 'g');
+function generateImages(
+  setting: CollectionSetting,
+  sets: TraitSet[],
+  imgDict: ImageDictionary
+) {
+  const outputDirectory = path.join(collectionDir, 'output', 'images');
 
-      return regexps;
-    },
-    {} as Record<string, RegExp>
-  );
+  !existsSync(outputDirectory) && mkdirSync(outputDirectory, {recursive: true});
 
-  await Promise.all(
-    elements.flat().map(element =>
-      Promise.all(
-        Object.values(element.layers).map(filePath => {
-          imgDict[filePath] = {};
-
-          return Promise.all(
-            colorSetting.colorSets.map(async (colorSet, index) => {
-              let imgFile = await readFile(filePath, {encoding: 'utf-8'});
-
-              colorSetting.types.forEach(type => {
-                imgFile = imgFile.replace(
-                  defaultColorRegex[type],
-                  colorSet[type]
-                );
-              });
-
-              const blob = new Blob([imgFile], {type: 'image/svg+xml'});
-
-              imgDict[filePath][index] = await loadImage(
-                Buffer.from(new Uint8Array(await blob.arrayBuffer()))
-              );
-            })
-          );
-        })
-      )
-    )
-  );
-
-  return imgDict;
+  switch (setting.imagesGenerator) {
+    case 'batch':
+      return batch.generateImages(sets, imgDict, setting);
+    case 'sequential':
+    default:
+      return sequential.generateImages(sets, imgDict);
+  }
 }
