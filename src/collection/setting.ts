@@ -1,12 +1,13 @@
 import {CollectionSetting} from '../generator/interfaces';
 
 export const setting: CollectionSetting = {
+  removeOutputs: true,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 20,
+  randomTimes: 10,
   batchSize: 2000,
   setsGenerator: 'randomization',
-  imagesGenerator: 'sequential',
+  imgsGenerator: 'sequential',
   traits: [
     'Background',
     'Body',

@@ -5,13 +5,14 @@ export type TraitSet = Record<string, ElementLayers>;
 export type ImageDictionary = Record<string, Record<string, Image>>;
 
 export interface CollectionSetting {
+  removeOutputs?: boolean;
   indexStep?: number;
   imgSize?: number;
   resolution?: number;
   randomTimes?: number;
   batchSize?: number;
   setsGenerator?: 'multiplication' | 'randomization';
-  imagesGenerator?: 'batch' | 'sequential';
+  imgsGenerator?: 'batch' | 'sequential';
   traits?: string[];
   syncColor?: ColorSetting;
 }

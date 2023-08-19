@@ -1,4 +1,4 @@
-import {existsSync, mkdirSync} from 'node:fs';
+import {existsSync, mkdirSync, rmSync} from 'node:fs';
 import {readFile, readdir} from 'node:fs/promises';
 import * as path from 'path';
 
@@ -17,7 +17,16 @@ import * as randomization from './generator/sets/randomization';
 import * as batch from './generator/images/batch';
 import * as sequential from './generator/images/sequential';
 
-import {collectionDir} from './lib';
+import {collectionDir, outputImageDir, outputMetadataDir} from './lib';
+
+if (setting.removeOutputs) {
+  try {
+    rmSync(outputImageDir, {recursive: true});
+    rmSync(outputMetadataDir, {recursive: true});
+  } catch {
+    /* empty */
+  }
+}
 
 (async () => {
   console.time('Initialize collection');
@@ -35,6 +44,7 @@ import {collectionDir} from './lib';
 
 async function initializeCollection() {
   const traitsPath = path.join(collectionDir, 'traits');
+  const imgExts = ['.png', '.svg'];
   const layerRegex = /\.\d+$/;
   const filePaths: string[] = [];
 
@@ -49,19 +59,26 @@ async function initializeCollection() {
       const traitPath = path.join(traitsPath, trait);
       const elementDict: {[element: string]: ElementLayers['layers']} = {};
 
-      (await readdir(traitPath)).forEach(fileName => {
-        const filePath = path.join(traitPath, fileName);
-        const layerName = path.basename(fileName, path.extname(fileName));
-        const element = layerName.replace(layerRegex, '');
-        const layerZIndex =
-          Number(layerName.match(layerRegex)?.[0].substring(1)) ||
-          traitIndex * (setting.indexStep || 200);
+      (await readdir(traitPath, {withFileTypes: true}))
+        .filter(
+          dirent =>
+            dirent.isFile() && imgExts.includes(path.extname(dirent.name))
+        )
+        .map(dirent => dirent.name)
+        .forEach(fileName => {
+          const filePath = path.join(traitPath, fileName);
+          const layerName = path.basename(fileName, path.extname(fileName));
+          const element = layerName.replace(layerRegex, '');
+          const layerZIndex =
+            Number(layerName.match(layerRegex)?.[0].substring(1)) ||
+            traitIndex * (setting.indexStep || 200);
 
-        if (elementDict[element]) elementDict[element][layerZIndex] = filePath;
-        else elementDict[element] = {[layerZIndex]: filePath};
+          if (elementDict[element])
+            elementDict[element][layerZIndex] = filePath;
+          else elementDict[element] = {[layerZIndex]: filePath};
 
-        filePaths.push(filePath);
-      });
+          filePaths.push(filePath);
+        });
 
       return Object.entries(elementDict).map(([element, layers]) => ({
         layers,
@@ -90,18 +107,23 @@ async function initializeCollection() {
 
         return Promise.all(
           syncColorSetting.colorSets.map(async (colorSet, index) => {
-            let imgFile = await readFile(filePath, {encoding: 'utf-8'});
-            const img = new Image();
+            if (path.extname(filePath) === '.svg') {
+              let imgFile = await readFile(filePath, {encoding: 'utf-8'});
+              const img = new Image();
 
-            syncColorSetting.types.forEach(type => {
-              imgFile = imgFile.replace(
-                defaultColorRegex[type],
-                colorSet[type]
-              );
-            });
+              syncColorSetting.types.forEach(type => {
+                imgFile = imgFile.replace(
+                  defaultColorRegex[type],
+                  colorSet[type]
+                );
+              });
 
-            img.src = 'data:image/svg+xml;charset=utf-8,' + imgFile;
-            imgDict[filePath][index] = img;
+              img.src = 'data:image/svg+xml;charset=utf-8,' + imgFile;
+              imgDict[filePath][index] = img;
+              return;
+            }
+
+            imgDict[filePath][index] = await loadImage(filePath);
           })
         );
       })
@@ -132,7 +154,7 @@ function generateSets(
       return randomization.generateSets(
         traits,
         elements,
-        setting.randomTimes || Math.random() * 20
+        setting.randomTimes || Math.random() * 10
       );
   }
 }
@@ -146,7 +168,7 @@ function generateImages(
 
   !existsSync(outputDirectory) && mkdirSync(outputDirectory, {recursive: true});
 
-  switch (setting.imagesGenerator) {
+  switch (setting.imgsGenerator) {
     case 'batch':
       return batch.generateImages(sets, imgDict, setting);
     case 'sequential':
