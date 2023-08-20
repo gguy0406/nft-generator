@@ -4,10 +4,10 @@ import * as path from 'path';
 
 import {Image, loadImage} from 'canvas';
 
-import {batchGenNfts} from './generator/nft/batch';
-import {sequentialGenNfts} from './generator/nft/sequential';
-import {genImg} from './generator/nft/image';
-import {genMetadata} from './generator/nft/metadata';
+import {batchGenAssets} from './generator/asset/batch';
+import {sequentialGenAssets} from './generator/asset/sequential';
+import {genImg} from './generator/asset/image';
+import {genMetadata} from './generator/asset/metadata';
 import {multiplyTraits} from './generator/set/multiplication';
 import {randomSets} from './generator/set/randomization';
 import {genCanvas} from './generator/canvas';
@@ -43,7 +43,7 @@ if (setting.rmOutputs) {
   console.timeEnd('Generate sets');
 
   console.time('Generate images');
-  await generateNfts(setting, sets, imgDict);
+  await generateAssets(setting, sets, imgDict);
   console.timeEnd('Generate images');
 })();
 
@@ -151,30 +151,27 @@ function generateSets(setting: GeneratorSetting, traits: string[], elements: Ele
   }
 }
 
-function generateNfts(setting: GeneratorSetting, sets: TraitSet[], imgDict: ImageDictionary) {
-  const cb = (set: TraitSet, index: number) => {
-    const filePath = path.join(outputImageDir, `${index + 1}`);
+function generateAssets(setting: GeneratorSetting, sets: TraitSet[], imgDict: ImageDictionary) {
+  const pngConfig = {resolution: setting.resolution};
+  const callbackfn = (set: TraitSet, index: number) => {
+    const canvas = genCanvas(
+      set,
+      imgDict,
+      setting.imgSize,
+      setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0
+    );
 
     return Promise.all([
-      genImg(
-        `${filePath}.png`,
-        genCanvas(
-          set,
-          imgDict,
-          setting.imgSize,
-          setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0
-        ),
-        setting.resolution ? {resolution: setting.resolution} : undefined
-      ),
-      genMetadata(`${filePath}.json`, set),
+      genImg(path.join(outputImageDir, `${index + 1}.png`), canvas, pngConfig),
+      genMetadata(path.join(outputMetadataDir, `${index + 1}.json`), set),
     ]);
   };
 
   switch (setting.imgsGenerator) {
     case 'batch':
-      return batchGenNfts(sets, cb, setting.batchSize);
+      return batchGenAssets(sets, callbackfn, setting.batchSize);
     case 'sequential':
     default:
-      return sequentialGenNfts(sets, cb);
+      return sequentialGenAssets(sets, callbackfn);
   }
 }
