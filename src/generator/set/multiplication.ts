@@ -1,6 +1,6 @@
 import {ElementLayers, TraitSet} from '../interface';
 
-export function generateSets(
+export function multiplyTraits(
   traits: string[],
   elements: ElementLayers[][],
   traitIndex: number = 0,
@@ -13,11 +13,9 @@ export function generateSets(
   let currentSet: TraitSet[];
 
   if (trait === 'Background' || trait === 'Ear') {
-    currentSet = traits[traitIndex + 1]
-      ? generateSets(traits, elements, traitIndex + 1, memoSet)
-      : [];
+    currentSet = traits[traitIndex + 1] ? multiplyTraits(traits, elements, traitIndex + 1, memoSet) : [];
   } else if (traits[traitIndex + 1]) {
-    const smallerSets = generateSets(traits, elements, traitIndex + 1, memoSet);
+    const smallerSets = multiplyTraits(traits, elements, traitIndex + 1, memoSet);
 
     // TODO: implement element constraint
     currentSet = smallerSets.length
@@ -38,14 +36,8 @@ export function generateSets(
     const earIndex = traits.findIndex(trait => trait === 'Ear');
 
     currentSet.map(set => {
-      set['Background'] =
-        elements[bgTraitIndex][
-          Math.floor(Math.random() * elements[bgTraitIndex].length)
-        ];
-      set['Ear'] =
-        elements[earIndex][
-          Math.floor(Math.random() * elements[earIndex].length)
-        ];
+      set['Background'] = elements[bgTraitIndex][Math.floor(Math.random() * elements[bgTraitIndex].length)];
+      set['Ear'] = elements[earIndex][Math.floor(Math.random() * elements[earIndex].length)];
 
       return set;
     });

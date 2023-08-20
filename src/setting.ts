@@ -1,5 +1,5 @@
 export interface GeneratorSetting {
-  removeOutputs?: boolean;
+  rmOutputs?: boolean;
   indexStep?: number;
   imgSize?: number;
   resolution?: number;
@@ -18,24 +18,15 @@ export interface ColorSetting {
 }
 
 export const setting: GeneratorSetting = {
-  removeOutputs: true,
+  rmOutputs: true,
+  indexStep: 200,
   imgSize: 2000,
   resolution: 150,
   randomTimes: 10,
   batchSize: 2000,
   setsGenerator: 'randomization',
   imgsGenerator: 'sequential',
-  traits: [
-    'Background',
-    'Body',
-    'Cloth',
-    'Hand',
-    'Self',
-    'Head',
-    'Hair',
-    'Face',
-    'Ear',
-  ],
+  traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   syncColor: {
     types: ['Main color', 'Shadow color'],
     defaultSet: {'Main color': '#FFC68E', 'Shadow color': '#D18154'},

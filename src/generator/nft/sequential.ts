@@ -1,10 +1,7 @@
 import {TraitSet} from '../interface';
 
-export async function generateSequential<T>(
-  sets: TraitSet[],
-  cb: (set: TraitSet, index: number) => Promise<T>
-) {
-  await sets.reduce(
+export async function sequentialGenNfts<T>(sets: TraitSet[], cb: (set: TraitSet, index: number) => Promise<T>) {
+  return sets.reduce(
     async (previousSet, currentSet, index) => {
       if (previousSet) await previousSet;
 

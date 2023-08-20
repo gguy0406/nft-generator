@@ -2,12 +2,7 @@ import {Image, createCanvas} from 'canvas';
 
 import {ImageDictionary, TraitSet} from './interface';
 
-export function generateCanvas(
-  set: TraitSet,
-  imgs: ImageDictionary,
-  imgSize: number = 512,
-  skinColor: number = 0
-) {
+export function genCanvas(set: TraitSet, imgs: ImageDictionary, imgSize: number = 512, skinColor: number = 0) {
   const canvas = createCanvas(imgSize, imgSize);
   const ctx = canvas.getContext('2d');
   const allLayers: {[zIndex: string]: Image} = {};
