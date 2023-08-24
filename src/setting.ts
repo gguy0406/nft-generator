@@ -4,14 +4,14 @@ export interface GeneratorSetting {
   imgSize?: number;
   resolution?: number;
   randomTimes?: number;
-  batchSize?: number;
   setsGenerator?: 'multiplication' | 'randomization';
-  imgsGenerator?: 'batch' | 'sequential';
   traits?: string[];
+  randomTraits?: string[];
   syncColor?: ColorSetting;
 }
 
 export interface ColorSetting {
+  traits: string[];
   types: string[];
   defaultSet: Record<ColorSetting['types'][number], string>;
   colorSets: Array<ColorSetting['defaultSet']>;
@@ -23,11 +23,11 @@ export const setting: GeneratorSetting = {
   imgSize: 2000,
   resolution: 150,
   randomTimes: 10,
-  batchSize: 2000,
   setsGenerator: 'randomization',
-  imgsGenerator: 'sequential',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
+  randomTraits: ['Background', 'Ear'],
   syncColor: {
+    traits: ['Body'],
     types: ['Main color', 'Shadow color'],
     defaultSet: {'Main color': '#FFC68E', 'Shadow color': '#D18154'},
     colorSets: [
