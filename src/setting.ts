@@ -23,11 +23,11 @@ export const setting: GeneratorSetting = {
   imgSize: 2000,
   resolution: 150,
   randomTimes: 10,
-  setsGenerator: 'randomization',
+  setsGenerator: 'multiplication',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
   syncColor: {
-    traits: ['Body'],
+    traits: ['Body', 'Hand', 'Head', 'Face', 'Ear'],
     types: ['Main color', 'Shadow color'],
     defaultSet: {'Main color': '#FFC68E', 'Shadow color': '#D18154'},
     colorSets: [

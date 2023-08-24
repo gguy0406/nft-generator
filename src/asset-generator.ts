@@ -1,3 +1,5 @@
+import * as _cluster from 'node:cluster';
+import {availableParallelism} from 'os';
 import {readFile, writeFile} from 'node:fs/promises';
 import * as path from 'path';
 
@@ -5,15 +7,31 @@ import {Image, createCanvas, loadImage} from 'canvas';
 
 import {TraitSet} from './set-generator/interface';
 
-import {outputImageDir, outputMetadataDir} from './index';
+import {outputDir, outputImageDir, outputMetadataDir} from './constant';
+import {TraitFilePaths} from './interface';
 import {setting} from './setting';
+
+const cluster = _cluster as unknown as _cluster.Cluster;
 
 type ColoredImage = {[colorSet: number]: Image};
 type ImageDictionary = {[filePath: string]: Image | ColoredImage};
 
-export type TraitFilePaths = {[trait: string]: string[]};
+(async () => {
+  if (!cluster.worker) return;
 
-export async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) {
+  const numCPUs = availableParallelism();
+  const workerId = cluster.worker.id;
+  const sets: TraitSet[] = JSON.parse(await readFile(path.join(outputDir, 'sets.json'), 'utf-8'));
+  const filePaths: TraitFilePaths = JSON.parse(await readFile(path.join(outputDir, 'traitFilePaths.json'), 'utf-8'));
+  const numSetsEachWorker = Math.ceil(sets.length / numCPUs);
+  const startSetIndex = numSetsEachWorker * (workerId - 1);
+  const endSetIndex = startSetIndex + numSetsEachWorker;
+
+  await generateAssets(sets.slice(startSetIndex, endSetIndex), filePaths, startSetIndex);
+  cluster.worker.disconnect();
+})();
+
+export async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, offset: number) {
   const imgDict = await getImgDict(traitFilePaths);
   const pngConfig = {resolution: setting.resolution};
   const imgSize = setting.imgSize || 1520;
@@ -31,8 +49,11 @@ export async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFile
       }
 
       return Promise.all([
-        writeFile(path.join(outputImageDir, `${index + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
-        writeFile(path.join(outputMetadataDir, `${index + 1}.json`), JSON.stringify(currentSet.traits, undefined, 2)),
+        writeFile(path.join(outputImageDir, `${offset + index + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
+        writeFile(
+          path.join(outputMetadataDir, `${offset + index + 1}.json`),
+          JSON.stringify(currentSet.traits, undefined, 2)
+        ),
       ]);
     },
     undefined as unknown as Promise<[void, void]>
