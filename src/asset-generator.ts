@@ -1,6 +1,6 @@
 import * as _cluster from 'node:cluster';
-import {availableParallelism} from 'os';
 import {readFile, writeFile} from 'node:fs/promises';
+import {availableParallelism} from 'os';
 import * as path from 'path';
 
 import {Image, createCanvas, loadImage} from 'canvas';
@@ -11,12 +11,12 @@ import {outputDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
 import {setting} from './setting';
 
-const cluster = _cluster as unknown as _cluster.Cluster;
-
 type ColoredImage = {[colorSet: number]: Image};
 type ImageDictionary = {[filePath: string]: Image | ColoredImage};
 
 (async () => {
+  const cluster = _cluster as unknown as _cluster.Cluster;
+
   if (!cluster.worker) return;
 
   const numCPUs = availableParallelism();
@@ -31,33 +31,30 @@ type ImageDictionary = {[filePath: string]: Image | ColoredImage};
   cluster.worker.disconnect();
 })();
 
-export async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, offset: number) {
+async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, offset: number) {
   const imgDict = await getImgDict(traitFilePaths);
   const pngConfig = {resolution: setting.resolution};
   const imgSize = setting.imgSize || 1520;
 
-  return sets.reduce(
-    async (previousSet, currentSet, index) => {
-      if (previousSet) await previousSet;
+  return sets.reduce(async (previousSet: Promise<[void, void]> | undefined, currentSet, index) => {
+    if (previousSet) await previousSet;
 
-      const canvas = createCanvas(imgSize, imgSize);
-      const ctx = canvas.getContext('2d');
-      const colorSet = setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0;
+    const canvas = createCanvas(imgSize, imgSize);
+    const ctx = canvas.getContext('2d');
+    const colorSet = setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0;
 
-      for (const layer of Object.values(currentSet.layers)) {
-        ctx.drawImage((imgDict[layer] as ColoredImage)[colorSet] || (imgDict[layer] as Image), 0, 0, imgSize, imgSize);
-      }
+    for (const layer of Object.values(currentSet.layers)) {
+      ctx.drawImage((imgDict[layer] as ColoredImage)[colorSet] || (imgDict[layer] as Image), 0, 0, imgSize, imgSize);
+    }
 
-      return Promise.all([
-        writeFile(path.join(outputImageDir, `${offset + index + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
-        writeFile(
-          path.join(outputMetadataDir, `${offset + index + 1}.json`),
-          JSON.stringify(currentSet.traits, undefined, 2)
-        ),
-      ]);
-    },
-    undefined as unknown as Promise<[void, void]>
-  );
+    return Promise.all([
+      writeFile(path.join(outputImageDir, `${offset + index + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
+      writeFile(
+        path.join(outputMetadataDir, `${offset + index + 1}.json`),
+        JSON.stringify(currentSet.traits, undefined, 2)
+      ),
+    ]);
+  }, undefined);
 }
 
 async function getImgDict(traitFilePaths: TraitFilePaths) {
