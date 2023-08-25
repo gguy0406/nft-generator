@@ -10,9 +10,9 @@ export interface ConstraintSetting {
 }
 
 export interface JoinConstraint {
-  join?: {[trait: string]: string[]};
+  join: {[trait: string]: string[]};
 }
 
 export interface DisjoinConstraint {
-  disjoin?: {[trait: string]: string[]};
+  disjoin: {[trait: string]: string[]};
 }

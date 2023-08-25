@@ -5,7 +5,7 @@ import {availableParallelism} from 'os';
 import * as path from 'path';
 
 import {ElementLayers} from './set-generator/interface';
-import {multiplyTraits} from './set-generator/multiplication';
+import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
 import {randomSets} from './set-generator/randomization';
 
 import {traitsDir, outputDir, outputImageDir, outputMetadataDir} from './constant';
@@ -111,7 +111,9 @@ async function getElements(traits: string[]) {
 function generateSets(setting: GeneratorSetting, traits: string[], elements: ElementLayers[][]) {
   switch (setting.setsGenerator) {
     case 'multiplication':
-      return multiplyTraits(traits, elements, setting.randomTraits, setting.constraintSetting);
+      return setting.constraintSetting
+        ? multiplyTraitsWithConstraint(traits, elements, setting.constraintSetting, setting.randomTraits)
+        : multiplyTraits(traits, elements, setting.randomTraits);
     case 'randomization':
     default:
       return randomSets(traits, elements, setting.randomTimes || Math.random() * 10);
