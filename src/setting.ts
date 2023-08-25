@@ -1,3 +1,5 @@
+import {ConstraintSetting} from './set-generator/interface';
+
 export interface GeneratorSetting {
   rmOutputs?: boolean;
   indexStep?: number;
@@ -8,6 +10,7 @@ export interface GeneratorSetting {
   traits?: string[];
   randomTraits?: string[];
   syncColor?: ColorSetting;
+  constraintSetting?: ConstraintSetting;
 }
 
 export interface ColorSetting {
@@ -23,7 +26,7 @@ export const setting: GeneratorSetting = {
   imgSize: 2000,
   resolution: 150,
   randomTimes: 60,
-  setsGenerator: 'randomization',
+  setsGenerator: 'multiplication',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
   syncColor: {
@@ -38,5 +41,15 @@ export const setting: GeneratorSetting = {
       {'Main color': '#AA4A37', 'Shadow color': '#71150C'},
       {'Main color': '#7C00D9', 'Shadow color': '#3C00B9'},
     ],
+  },
+  constraintSetting: {
+    Ear: {Earrings: {disjoin: {Hand: ['Spinning']}}},
+    Face: {
+      StarFace: {
+        join: {Self: ['Evil', 'Planet']},
+        disjoin: {Hair: ['TiffanyCowboy']},
+      },
+    },
+    Hair: {CyanFuzz: {join: {Hand: ['BluePot']}}},
   },
 };

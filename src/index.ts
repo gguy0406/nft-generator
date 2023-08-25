@@ -22,6 +22,7 @@ async function main() {
   console.time('Generate sets');
   const sets = generateSets(setting, traits, elements);
   console.timeEnd('Generate sets');
+  console.log(sets.length);
 
   console.time('Generate assets');
   if (setting.rmOutputs) {
@@ -110,7 +111,7 @@ async function getElements(traits: string[]) {
 function generateSets(setting: GeneratorSetting, traits: string[], elements: ElementLayers[][]) {
   switch (setting.setsGenerator) {
     case 'multiplication':
-      return multiplyTraits(traits, elements, setting.randomTraits);
+      return multiplyTraits(traits, elements, setting.randomTraits, setting.constraintSetting);
     case 'randomization':
     default:
       return randomSets(traits, elements, setting.randomTimes || Math.random() * 10);
