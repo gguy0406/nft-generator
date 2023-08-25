@@ -1,7 +1,7 @@
 {
   "name": "nft-generator",
   "version": "1.0.0",
-  "description": "A tool for generating NFT collections from traits",
+  "description": "A tool for generating NFT assets from traits",
   "scripts": {
     "start": "npx ts-node ./src/index.ts",
     "lint": "gts lint",

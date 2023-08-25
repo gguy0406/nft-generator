@@ -1,32 +1,20 @@
 import * as _cluster from 'node:cluster';
-import {existsSync, mkdirSync, rmSync} from 'node:fs';
+import {existsSync} from 'node:fs';
+import {mkdir, readdir, rm, writeFile} from 'node:fs/promises';
 import {availableParallelism} from 'os';
-import {readdir, writeFile} from 'node:fs/promises';
 import * as path from 'path';
 
 import {ElementLayers} from './set-generator/interface';
 import {multiplyTraits} from './set-generator/multiplication';
 import {randomSets} from './set-generator/randomization';
 
-import {TraitFilePaths} from './interface';
 import {traitsDir, outputDir, outputImageDir, outputMetadataDir} from './constant';
+import {TraitFilePaths} from './interface';
 import {GeneratorSetting, setting} from './setting';
 
-const cluster = _cluster as unknown as _cluster.Cluster;
+main();
 
-if (setting.rmOutputs) {
-  try {
-    rmSync(outputImageDir, {recursive: true});
-    rmSync(outputMetadataDir, {recursive: true});
-  } catch {
-    /* empty */
-  }
-}
-
-!existsSync(outputImageDir) && mkdirSync(outputImageDir, {recursive: true});
-!existsSync(outputMetadataDir) && mkdirSync(outputMetadataDir);
-
-(async () => {
+async function main() {
   console.time('Initialize collection');
   const {traits, elements, traitFilePaths} = await initializeCollection();
   console.timeEnd('Initialize collection');
@@ -35,26 +23,42 @@ if (setting.rmOutputs) {
   const sets = generateSets(setting, traits, elements);
   console.timeEnd('Generate sets');
 
-  console.time('Generate images');
+  console.time('Generate assets');
+  if (setting.rmOutputs) {
+    await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
+  }
+
+  !existsSync(outputDir) && (await mkdir(outputDir, {recursive: true}));
+  !existsSync(outputImageDir) && (await mkdir(outputImageDir));
+  !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
+
+  const setsJsonPath = path.join(outputDir, 'sets.json');
+  const traitFilePathsJsonPath = path.join(outputDir, 'traitFilePaths.json');
+
   await Promise.all([
-    writeFile(path.join(outputDir, 'sets.json'), JSON.stringify(sets)),
-    writeFile(path.join(outputDir, 'traitFilePaths.json'), JSON.stringify(traitFilePaths)),
+    writeFile(setsJsonPath, JSON.stringify(sets)),
+    writeFile(traitFilePathsJsonPath, JSON.stringify(traitFilePaths)),
   ]);
 
-  cluster.setupPrimary({exec: './src/asset-generator.ts'});
-
+  const cluster = _cluster as unknown as _cluster.Cluster;
   const numCPUs = availableParallelism();
   let disconnectedCount = 0;
+
+  cluster.setupPrimary({exec: './src/asset-generator.ts'});
 
   for (let i = 1; i <= numCPUs; i++) {
     const worker = cluster.fork();
 
     worker.on('exit', () => {
       disconnectedCount++;
-      disconnectedCount === numCPUs && console.timeEnd('Generate images');
+
+      if (disconnectedCount < numCPUs) return;
+
+      Promise.all([rm(setsJsonPath), rm(traitFilePathsJsonPath)]);
+      console.timeEnd('Generate assets');
     });
   }
-})();
+}
 
 async function initializeCollection() {
   const traits: string[] =

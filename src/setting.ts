@@ -22,8 +22,8 @@ export const setting: GeneratorSetting = {
   indexStep: 200,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 10,
-  setsGenerator: 'multiplication',
+  randomTimes: 60,
+  setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
   syncColor: {
