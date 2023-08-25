@@ -19,10 +19,10 @@ async function main() {
   const {traits, elements, traitFilePaths} = await initializeCollection();
   console.timeEnd('Initialize collection');
 
-  console.time('Generate sets');
+  console.time('sets');
   const sets = generateSets(setting, traits, elements);
-  console.timeEnd('Generate sets');
-  console.log(sets.length);
+  process.stdout.write(`Generate ${sets.length} `);
+  console.timeEnd('sets');
 
   console.time('Generate assets');
   if (setting.rmOutputs) {
