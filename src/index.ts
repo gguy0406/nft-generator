@@ -21,6 +21,15 @@ async function main() {
 
   console.time('sets');
   const sets = generateSets(setting, traits, elements);
+
+  if (setting.hiddenTraits) {
+    sets.forEach(set => {
+      for (const trait of setting.hiddenTraits!) {
+        delete set.traits[trait];
+      }
+    });
+  }
+
   process.stdout.write(`Generate ${sets.length} `);
   console.timeEnd('sets');
 

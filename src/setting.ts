@@ -9,6 +9,7 @@ export interface GeneratorSetting {
   setsGenerator?: 'multiplication' | 'randomization';
   traits?: string[];
   randomTraits?: string[];
+  hiddenTraits?: string[];
   syncColor?: ColorSetting;
   constraintSetting?: ConstraintSetting;
 }
@@ -29,6 +30,7 @@ export const setting: GeneratorSetting = {
   setsGenerator: 'multiplication',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
+  hiddenTraits: ['Background', 'Body', 'Ear'],
   syncColor: {
     traits: ['Body', 'Hand', 'Head', 'Face', 'Ear'],
     types: ['Main color', 'Shadow color'],
