@@ -28,7 +28,6 @@ export const setting: GeneratorSetting = {
   randomTimes: 60,
   setsGenerator: 'multiplication',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
-  // traits: ['Background', 'Body', 'Hand', 'Self', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
   syncColor: {
     traits: ['Body', 'Hand', 'Head', 'Face', 'Ear'],

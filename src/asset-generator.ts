@@ -1,13 +1,12 @@
 import * as _cluster from 'node:cluster';
 import {readFile, writeFile} from 'node:fs/promises';
-import {availableParallelism} from 'os';
 import * as path from 'path';
 
 import {Image, createCanvas, loadImage} from 'canvas';
 
 import {TraitSet} from './set-generator/interface';
 
-import {outputDir, outputImageDir, outputMetadataDir} from './constant';
+import {numCPUs, outputDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
 import {setting} from './setting';
 
@@ -19,7 +18,6 @@ type ImageDictionary = {[filePath: string]: Image | ColoredImage};
 
   if (!cluster.worker) return;
 
-  const numCPUs = availableParallelism();
   const workerId = cluster.worker.id;
   const sets: TraitSet[] = JSON.parse(await readFile(path.join(outputDir, 'sets.json'), 'utf-8'));
   const filePaths: TraitFilePaths = JSON.parse(await readFile(path.join(outputDir, 'traitFilePaths.json'), 'utf-8'));
@@ -27,6 +25,7 @@ type ImageDictionary = {[filePath: string]: Image | ColoredImage};
   const startSetIndex = numSetsEachWorker * (workerId - 1);
   const endSetIndex = startSetIndex + numSetsEachWorker;
 
+  await sleep(500 * (workerId - 1));
   await generateAssets(sets.slice(startSetIndex, endSetIndex), filePaths, startSetIndex);
   cluster.worker.disconnect();
 })();
@@ -38,6 +37,8 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, 
 
   return sets.reduce(async (previousSet: Promise<[void, void]> | undefined, currentSet, index) => {
     if (previousSet) await previousSet;
+
+    await sleep(500);
 
     const canvas = createCanvas(imgSize, imgSize);
     const ctx = canvas.getContext('2d');
@@ -112,4 +113,8 @@ async function getImgDict(traitFilePaths: TraitFilePaths) {
 
 function getImgDictNormalTrait(imgDict: ImageDictionary, filePaths: string[]) {
   return Promise.all(filePaths.map(async filePath => (imgDict[filePath] = await loadImage(filePath))));
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

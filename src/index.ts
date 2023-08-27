@@ -1,14 +1,13 @@
 import * as _cluster from 'node:cluster';
 import {existsSync} from 'node:fs';
 import {mkdir, readdir, rm, writeFile} from 'node:fs/promises';
-import {availableParallelism} from 'os';
 import * as path from 'path';
 
 import {ElementLayers} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
 import {randomSets} from './set-generator/randomization';
 
-import {traitsDir, outputDir, outputImageDir, outputMetadataDir} from './constant';
+import {numCPUs, traitsDir, outputDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
 import {GeneratorSetting, setting} from './setting';
 
@@ -42,7 +41,6 @@ async function main() {
   ]);
 
   const cluster = _cluster as unknown as _cluster.Cluster;
-  const numCPUs = availableParallelism();
   let disconnectedCount = 0;
 
   cluster.setupPrimary({exec: './src/asset-generator.ts'});
