@@ -13,9 +13,9 @@ import {setting} from './setting';
 type ColoredImage = {[colorSet: number]: Image};
 type ImageDictionary = {[filePath: string]: Image | ColoredImage};
 
-(async () => {
-  const cluster = _cluster as unknown as _cluster.Cluster;
+const cluster = _cluster as unknown as _cluster.Cluster;
 
+(async () => {
   if (!cluster.worker) return;
 
   const workerId = cluster.worker.id;
@@ -25,7 +25,7 @@ type ImageDictionary = {[filePath: string]: Image | ColoredImage};
   const startSetIndex = numSetsEachWorker * (workerId - 1);
   const endSetIndex = startSetIndex + numSetsEachWorker;
 
-  await sleep(500 * (workerId - 1));
+  await sleep(600 * (workerId - 1));
   await generateAssets(sets.slice(startSetIndex, endSetIndex), filePaths, startSetIndex);
   cluster.worker.disconnect();
 })();
@@ -35,7 +35,7 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, 
   const pngConfig = {resolution: setting.resolution};
   const imgSize = setting.imgSize || 1520;
 
-  return sets.reduce(async (previousSet: Promise<[void, void]> | undefined, currentSet, index) => {
+  return sets.reduce(async (previousSet: Promise<[void, void, boolean | undefined]> | undefined, currentSet, index) => {
     if (previousSet) await previousSet;
 
     await sleep(500);
@@ -54,6 +54,7 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, 
         path.join(outputMetadataDir, `${offset + index + 1}.json`),
         JSON.stringify(currentSet.traits, undefined, 2)
       ),
+      Promise.resolve(cluster.worker!.send('')),
     ]);
   }, undefined);
 }

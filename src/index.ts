@@ -2,6 +2,7 @@ import * as _cluster from 'node:cluster';
 import {existsSync} from 'node:fs';
 import {mkdir, readdir, rm, writeFile} from 'node:fs/promises';
 import * as path from 'path';
+import * as ProgressBar from 'progress';
 
 import {ElementLayers} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
@@ -23,6 +24,7 @@ async function main() {
   process.stdout.write(`Generate ${sets.length} `);
   console.timeEnd('sets');
 
+  console.log('Number of cpu cores to use: ' + numCPUs);
   console.time('Generate assets');
   if (setting.rmOutputs) {
     await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
@@ -41,17 +43,20 @@ async function main() {
   ]);
 
   const cluster = _cluster as unknown as _cluster.Cluster;
-  let disconnectedCount = 0;
+  const progressBar = new ProgressBar(
+    'Generating [:bar] :percent, :current/:total assets, elapsed: :elapseds, estimate: :rate asset per second, :etas left ',
+    {total: sets.length}
+  );
 
   cluster.setupPrimary({exec: './src/asset-generator.ts'});
 
   for (let i = 1; i <= numCPUs; i++) {
     const worker = cluster.fork();
 
-    worker.on('exit', () => {
-      disconnectedCount++;
+    worker.on('message', () => {
+      progressBar.tick();
 
-      if (disconnectedCount < numCPUs) return;
+      if (!progressBar.complete) return;
 
       Promise.all([rm(setsJsonPath), rm(traitFilePathsJsonPath)]);
       console.timeEnd('Generate assets');
