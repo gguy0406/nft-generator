@@ -39,21 +39,18 @@ export function multiplyTraits(
     currentSets = getSmallestSet();
   }
 
-  if (traitIndex === 0) {
-    if (randomTraits?.length) {
-      randomTraits.forEach(rdTrait => {
-        const rdTraitIndex = traits.findIndex(trait => trait === rdTrait);
+  if (traitIndex !== 0) return (memoSet[trait] ||= currentSets);
+  if (!randomTraits?.length) return currentSets;
 
-        if (!~rdTraitIndex) return;
+  randomTraits.forEach(rdTrait => {
+    const rdTraitIndex = traits.findIndex(_trait => _trait === rdTrait);
 
-        currentSets.forEach(set => assignRandomElement(set, trait, elements[rdTraitIndex]));
-      });
-    }
+    if (!~rdTraitIndex) return;
 
-    return currentSets;
-  }
+    currentSets.forEach(set => assignRandomElement(set, trait, elements[rdTraitIndex]));
+  });
 
-  return (memoSet[trait] ||= currentSets);
+  return currentSets;
 }
 
 export function multiplyTraitsWithConstraint(
@@ -134,47 +131,44 @@ export function multiplyTraitsWithConstraint(
     currentSets = getSmallestSet();
   }
 
-  if (traitIndex === 0) {
-    if (randomTraits?.length) {
-      randomTraits.forEach(rdTrait => {
-        const rdTraitIndex = traits.findIndex(trait => trait === rdTrait);
+  if (traitIndex !== 0) return (memoSet[trait] ||= currentSets);
+  if (!randomTraits?.length) return currentSets;
 
-        if (!~rdTraitIndex) return;
+  randomTraits.forEach(rdTrait => {
+    const rdTraitIndex = traits.findIndex(_trait => _trait === rdTrait);
 
-        currentSets.forEach(set => {
-          const filteredElement = (
-            set.constraint[rdTrait]
-              ? elements[rdTraitIndex].filter(
-                  element =>
-                    !set.constraint[rdTrait].disjoin?.includes(element.name) &&
-                    (!set.constraint[rdTrait].join || set.constraint[rdTrait].join.includes(element.name))
-                )
-              : elements[rdTraitIndex]
-          ).filter(element => {
-            const constraintElement = constraintSetting[rdTrait]?.[element.name];
+    if (!~rdTraitIndex) return;
 
-            return (
-              !constraintElement ||
-              ((!('join' in constraintElement) ||
-                Object.entries(constraintElement.join).every(
-                  ([joinTrait, joinElements]) => set.traits[joinTrait] && joinElements.includes(set.traits[joinTrait])
-                )) &&
-                (!('disjoin' in constraintElement) ||
-                  Object.entries(constraintElement.disjoin).every(
-                    ([disjoinTrait, disjoinElement]) => !disjoinElement.includes(set.traits[disjoinTrait])
-                  )))
-            );
-          });
+    currentSets.forEach(set => {
+      const filteredElement = (
+        set.constraint[rdTrait]
+          ? elements[rdTraitIndex].filter(
+              element =>
+                !set.constraint[rdTrait].disjoin?.includes(element.name) &&
+                (!set.constraint[rdTrait].join || set.constraint[rdTrait].join.includes(element.name))
+            )
+          : elements[rdTraitIndex]
+      ).filter(element => {
+        const constraintElement = constraintSetting[rdTrait]?.[element.name];
 
-          assignRandomElement(set, trait, filteredElement);
-        });
+        return (
+          !constraintElement ||
+          ((!('join' in constraintElement) ||
+            Object.entries(constraintElement.join).every(
+              ([joinTrait, joinElements]) => set.traits[joinTrait] && joinElements.includes(set.traits[joinTrait])
+            )) &&
+            (!('disjoin' in constraintElement) ||
+              Object.entries(constraintElement.disjoin).every(
+                ([disjoinTrait, disjoinElement]) => !disjoinElement.includes(set.traits[disjoinTrait])
+              )))
+        );
       });
-    }
 
-    return currentSets;
-  }
+      assignRandomElement(set, trait, filteredElement);
+    });
+  });
 
-  return (memoSet[trait] ||= currentSets);
+  return currentSets;
 }
 
 function getSmallestSetWithConstraint(trait: string, elements: ElementLayers[], constraintSetting: ConstraintSetting) {
@@ -182,18 +176,18 @@ function getSmallestSetWithConstraint(trait: string, elements: ElementLayers[], 
     const constraint: TraitSet['constraint'] = {};
     const eleConstr: ConstraintSetting[string][string] | undefined = constraintSetting[trait]?.[element.name];
 
-    if (eleConstr) {
-      if ('join' in eleConstr) {
-        for (const [trait, joinElements] of Object.entries(eleConstr.join)) {
-          constraint[trait] = {join: [...joinElements], disjoin: []};
-        }
-      }
+    if (!eleConstr) return {constraint, traits: {[trait]: element.name}, layers: {...element.layers}};
 
-      if ('disjoin' in eleConstr) {
-        for (const [trait, disjoinElements] of Object.entries(eleConstr.disjoin)) {
-          if (constraint[trait]) constraint[trait].disjoin = [...disjoinElements];
-          else constraint[trait] = {join: [], disjoin: [...disjoinElements]};
-        }
+    if ('join' in eleConstr) {
+      for (const [trait, joinElements] of Object.entries(eleConstr.join)) {
+        constraint[trait] = {join: [...joinElements], disjoin: []};
+      }
+    }
+
+    if ('disjoin' in eleConstr) {
+      for (const [trait, disjoinElements] of Object.entries(eleConstr.disjoin)) {
+        if (constraint[trait]) constraint[trait].disjoin = [...disjoinElements];
+        else constraint[trait] = {join: [], disjoin: [...disjoinElements]};
       }
     }
 

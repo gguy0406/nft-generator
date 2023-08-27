@@ -35,9 +35,9 @@ async function main() {
 
   console.log('Number of cpu cores to use: ' + numCPUs);
   console.time('Generate assets');
-  if (setting.rmOutputs) {
+
+  if (setting.rmOutputs)
     await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
-  }
 
   !existsSync(outputDir) && (await mkdir(outputDir, {recursive: true}));
   !existsSync(outputImageDir) && (await mkdir(outputImageDir));
