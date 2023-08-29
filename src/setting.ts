@@ -2,6 +2,7 @@ import {ConstraintSetting} from './set-generator/interface';
 
 export interface GeneratorSetting {
   resetOutputs?: boolean;
+  shuffling?: boolean;
   numWorker?: number;
   indexStep?: number;
   imgSize?: number;
@@ -24,11 +25,12 @@ export interface ColorSetting {
 
 export const setting: GeneratorSetting = {
   resetOutputs: true,
+  shuffling: true,
   indexStep: 200,
   imgSize: 2000,
   resolution: 150,
   randomTimes: 30,
-  setsGenerator: 'randomization',
+  setsGenerator: 'multiplication',
   traits: ['Background', 'Body', 'Cloth', 'Hand', 'Self', 'Head', 'Hair', 'Face', 'Ear'],
   randomTraits: ['Background', 'Ear'],
   hiddenTraits: ['Background', 'Body', 'Ear'],

@@ -7,7 +7,7 @@ import * as ProgressBar from 'progress';
 
 import {ElementLayers, TraitSet} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
-import {randomSets} from './set-generator/randomization';
+import {randomSets, randomSetsWithConstraint} from './set-generator/randomization';
 
 import {traitsDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
@@ -88,7 +88,22 @@ function generateSets(setting: GeneratorSetting, traits: string[], elements: Ele
       break;
     case 'randomization':
     default:
-      sets = randomSets(traits, elements, setting.randomTimes || Math.random() * 10);
+      sets = setting.constraintSetting
+        ? randomSetsWithConstraint(traits, elements, setting.constraintSetting, setting.randomTimes)
+        : randomSets(traits, elements, setting.randomTimes);
+  }
+
+  if (setting.shuffling) {
+    let currentIndex = sets.length;
+    let randomIndex: number;
+
+    while (currentIndex > 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+
+      currentIndex--;
+
+      [sets[currentIndex], sets[randomIndex]] = [sets[randomIndex], sets[currentIndex]];
+    }
   }
 
   if (setting.hiddenTraits) {
@@ -153,7 +168,7 @@ async function prepareOutputDir() {
   if (setting.resetOutputs) {
     await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
   } else {
-    offset = (await readdir(outputImageDir)).length;
+    offset = Math.max(...(await readdir(outputImageDir)).map(file => Number(path.basename(file))));
   }
 
   !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));

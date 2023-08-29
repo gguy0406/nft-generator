@@ -1,4 +1,4 @@
-import {assignRandomElement} from './assign-random-element';
+import {addConstraint, assignRandomElement, filterElementConstraint} from './common';
 import {ConstraintSetting, ElementLayers, TraitSet} from './interface';
 
 export function multiplyTraits(
@@ -95,33 +95,7 @@ export function multiplyTraitsWithConstraint(
               constraint: structuredClone(smallerSet.constraint),
             };
 
-            const constraintElement = constraintSetting[trait]?.[element.name];
-
-            if (!constraintElement) {
-              sets.push(newSet);
-              return;
-            }
-
-            if ('join' in constraintElement) {
-              for (const [joinTrait, joinElements] of Object.entries(constraintElement.join)) {
-                if (newSet.traits[joinTrait] && !joinElements.includes(newSet.traits[joinTrait])) return;
-
-                if (!newSet.constraint[joinTrait])
-                  newSet.constraint[joinTrait] = {join: [...joinElements], disjoin: []};
-                else newSet.constraint[joinTrait].join.push(...joinElements);
-              }
-            }
-
-            if ('disjoin' in constraintElement) {
-              for (const [disjoinTrait, disjoinElements] of Object.entries(constraintElement.disjoin)) {
-                if (disjoinElements.includes(newSet.traits[disjoinTrait])) return;
-
-                if (!newSet.constraint[disjoinTrait])
-                  newSet.constraint[disjoinTrait] = {join: [], disjoin: [...disjoinElements]};
-                else newSet.constraint[disjoinTrait].disjoin.push(...disjoinElements);
-              }
-            }
-
+            addConstraint(trait, element, constraintSetting, newSet.constraint);
             sets.push(newSet);
           });
 
@@ -141,29 +115,7 @@ export function multiplyTraitsWithConstraint(
     if (!~rdTraitIndex) return;
 
     currentSets.forEach(set => {
-      const filteredElement = (
-        set.constraint[rdTrait]
-          ? elements[rdTraitIndex].filter(
-              element =>
-                !set.constraint[rdTrait].disjoin?.includes(element.name) &&
-                (!set.constraint[rdTrait].join || set.constraint[rdTrait].join.includes(element.name))
-            )
-          : elements[rdTraitIndex]
-      ).filter(element => {
-        const constraintElement = constraintSetting[rdTrait]?.[element.name];
-
-        return (
-          !constraintElement ||
-          ((!('join' in constraintElement) ||
-            Object.entries(constraintElement.join).every(
-              ([joinTrait, joinElements]) => set.traits[joinTrait] && joinElements.includes(set.traits[joinTrait])
-            )) &&
-            (!('disjoin' in constraintElement) ||
-              Object.entries(constraintElement.disjoin).every(
-                ([disjoinTrait, disjoinElement]) => !disjoinElement.includes(set.traits[disjoinTrait])
-              )))
-        );
-      });
+      const filteredElement = filterElementConstraint(set, rdTrait, elements[rdTraitIndex], constraintSetting);
 
       assignRandomElement(set, trait, filteredElement);
     });
@@ -174,23 +126,7 @@ export function multiplyTraitsWithConstraint(
 
 function getSmallestSetWithConstraint(trait: string, elements: ElementLayers[], constraintSetting: ConstraintSetting) {
   return elements.map(element => {
-    const constraint: TraitSet['constraint'] = {};
-    const eleConstr: ConstraintSetting[string][string] | undefined = constraintSetting[trait]?.[element.name];
-
-    if (!eleConstr) return {constraint, traits: {[trait]: element.name}, layers: {...element.layers}};
-
-    if ('join' in eleConstr) {
-      for (const [trait, joinElements] of Object.entries(eleConstr.join)) {
-        constraint[trait] = {join: [...joinElements], disjoin: []};
-      }
-    }
-
-    if ('disjoin' in eleConstr) {
-      for (const [trait, disjoinElements] of Object.entries(eleConstr.disjoin)) {
-        if (constraint[trait]) constraint[trait].disjoin = [...disjoinElements];
-        else constraint[trait] = {join: [], disjoin: [...disjoinElements]};
-      }
-    }
+    const constraint = addConstraint(trait, element, constraintSetting);
 
     return {constraint, traits: {[trait]: element.name}, layers: {...element.layers}};
   });
