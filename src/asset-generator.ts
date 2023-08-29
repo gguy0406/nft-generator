@@ -26,12 +26,8 @@ type ImageDictionary = {[filePath: string]: Image | ColoredImage};
   worker.on('message', async ({channel, message}: GeneratorChannel) => {
     switch (channel) {
       case 'assign':
-        try {
-          await generateAssets(message.setIndex, message.set, imgDict, pngConfig, imgSize);
-        } catch {
-          console.error(message);
-        }
-        worker.send({channel: 'complete', message: null});
+        await generateAssets(message.setIndex, message.set, imgDict, pngConfig, imgSize);
+        worker.send({channel: 'complete', message: message.setIndex});
         break;
       case 'init':
         imgDict = await getImgDict(message);

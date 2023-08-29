@@ -1,6 +1,7 @@
 import * as _cluster from 'node:cluster';
 import {existsSync} from 'node:fs';
 import {mkdir, readdir, rm} from 'node:fs/promises';
+import {availableParallelism} from 'os';
 import * as path from 'path';
 import * as ProgressBar from 'progress';
 
@@ -8,7 +9,7 @@ import {ElementLayers, TraitSet} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
 import {randomSets} from './set-generator/randomization';
 
-import {numCpus, traitsDir, outputImageDir, outputMetadataDir} from './constant';
+import {traitsDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
 import {GeneratorSetting, setting} from './setting';
 
@@ -23,8 +24,6 @@ async function main() {
   const sets = generateSets(setting, traits, elements);
   process.stdout.write(`Generate ${sets.length} `);
   console.timeEnd('sets');
-
-  console.log('Number of cpu cores to use: ' + numCpus);
 
   console.time('Generate assets');
   await generateAssets(sets, traitFilePaths);
@@ -104,29 +103,28 @@ function generateSets(setting: GeneratorSetting, traits: string[], elements: Ele
 }
 
 async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) {
-  setting.rmOutputs &&
-    (await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch());
+  const offset = await prepareOutputDir();
 
-  !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
-  !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
+  if (offset === sets.length) return Promise.resolve();
+
+  let setIndex = offset;
 
   const cluster = _cluster as unknown as _cluster.Cluster;
+  const progressBar = new ProgressBar(
+    'Generating [:bar] :percent, :current/:total assets, estimate: :rate asset per second, :etas left',
+    {total: sets.length, width: 50}
+  );
+
+  offset && progressBar.tick(offset);
 
   cluster.setupPrimary({exec: './src/asset-generator.ts'});
 
-  for (let i = 1; i <= numCpus; i++) {
+  for (let i = 1; i <= Math.floor(availableParallelism() * 0.34); i++) {
     cluster.fork().send({channel: 'init', message: traitFilePaths});
   }
 
   return new Promise<void>((resolve, reject) => {
     try {
-      const progressBar = new ProgressBar(
-        'Generating [:bar] :percent, :current/:total assets, estimate: :rate asset per second, :etas left',
-        {total: sets.length, width: 50}
-      );
-
-      let setIndex = 0;
-
       cluster.on('message', (worker, {channel}) => {
         if (setIndex < sets.length) {
           worker.send({channel: 'assign', message: {setIndex, set: sets[setIndex]}});
@@ -134,6 +132,7 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
         }
 
         if (channel === 'complete') progressBar.tick();
+
         if (!progressBar.complete) return;
 
         cluster.disconnect();
@@ -143,4 +142,19 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
       reject(err);
     }
   });
+}
+
+async function prepareOutputDir() {
+  let offset = 0;
+
+  if (setting.resetOutputs) {
+    await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
+  } else {
+    offset = (await readdir(outputImageDir)).length;
+  }
+
+  !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
+  !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
+
+  return offset;
 }

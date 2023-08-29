@@ -5,4 +5,4 @@ export type GeneratorChannel =
   | {channel: 'init'; message: TraitFilePaths}
   | {channel: 'ready'; message: null}
   | {channel: 'assign'; message: {setIndex: number; set: TraitSet}}
-  | {channel: 'complete'; message: null};
+  | {channel: 'complete'; message: number};
