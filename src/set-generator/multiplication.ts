@@ -85,8 +85,9 @@ export function multiplyTraitsWithConstraint(
               constraintTrait &&
               (constraintTrait.disjoin.includes(element.name) ||
                 (constraintTrait.join.length && !constraintTrait.join.includes(element.name)))
-            )
+            ) {
               return;
+            }
 
             const newSet = {
               traits: {...smallerSet.traits, [trait]: element.name},

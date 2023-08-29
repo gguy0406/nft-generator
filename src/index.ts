@@ -1,14 +1,14 @@
 import * as _cluster from 'node:cluster';
 import {existsSync} from 'node:fs';
-import {mkdir, readdir, rm, writeFile} from 'node:fs/promises';
+import {mkdir, readdir, rm} from 'node:fs/promises';
 import * as path from 'path';
 import * as ProgressBar from 'progress';
 
-import {ElementLayers} from './set-generator/interface';
+import {ElementLayers, TraitSet} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
 import {randomSets} from './set-generator/randomization';
 
-import {numCPUs, traitsDir, outputDir, outputImageDir, outputMetadataDir} from './constant';
+import {numCpus, traitsDir, outputImageDir, outputMetadataDir} from './constant';
 import {TraitFilePaths} from './interface';
 import {GeneratorSetting, setting} from './setting';
 
@@ -21,56 +21,14 @@ async function main() {
 
   console.time('sets');
   const sets = generateSets(setting, traits, elements);
-
-  if (setting.hiddenTraits) {
-    sets.forEach(set => {
-      for (const trait of setting.hiddenTraits!) {
-        delete set.traits[trait];
-      }
-    });
-  }
-
   process.stdout.write(`Generate ${sets.length} `);
   console.timeEnd('sets');
 
-  console.log('Number of cpu cores to use: ' + numCPUs);
+  console.log('Number of cpu cores to use: ' + numCpus);
+
   console.time('Generate assets');
-
-  if (setting.rmOutputs)
-    await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
-
-  !existsSync(outputDir) && (await mkdir(outputDir, {recursive: true}));
-  !existsSync(outputImageDir) && (await mkdir(outputImageDir));
-  !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
-
-  const setsJsonPath = path.join(outputDir, 'sets.json');
-  const traitFilePathsJsonPath = path.join(outputDir, 'traitFilePaths.json');
-
-  await Promise.all([
-    writeFile(setsJsonPath, JSON.stringify(sets)),
-    writeFile(traitFilePathsJsonPath, JSON.stringify(traitFilePaths)),
-  ]);
-
-  const cluster = _cluster as unknown as _cluster.Cluster;
-  const progressBar = new ProgressBar(
-    'Generating [:bar] :percent, :current/:total assets, elapsed: :elapseds, estimate: :rate asset per second, :etas left ',
-    {total: sets.length}
-  );
-
-  cluster.setupPrimary({exec: './src/asset-generator.ts'});
-
-  for (let i = 1; i <= numCPUs; i++) {
-    const worker = cluster.fork();
-
-    worker.on('message', () => {
-      progressBar.tick();
-
-      if (!progressBar.complete) return;
-
-      Promise.all([rm(setsJsonPath), rm(traitFilePathsJsonPath)]);
-      console.timeEnd('Generate assets');
-    });
-  }
+  await generateAssets(sets, traitFilePaths);
+  console.timeEnd('Generate assets');
 }
 
 async function initializeCollection() {
@@ -121,13 +79,68 @@ async function getElements(traits: string[]) {
 }
 
 function generateSets(setting: GeneratorSetting, traits: string[], elements: ElementLayers[][]) {
+  let sets: TraitSet[];
+
   switch (setting.setsGenerator) {
     case 'multiplication':
-      return setting.constraintSetting
+      sets = setting.constraintSetting
         ? multiplyTraitsWithConstraint(traits, elements, setting.constraintSetting, setting.randomTraits)
         : multiplyTraits(traits, elements, setting.randomTraits);
+      break;
     case 'randomization':
     default:
-      return randomSets(traits, elements, setting.randomTimes || Math.random() * 10);
+      sets = randomSets(traits, elements, setting.randomTimes || Math.random() * 10);
   }
+
+  if (setting.hiddenTraits) {
+    sets.forEach(set => {
+      for (const trait of setting.hiddenTraits!) {
+        delete set.traits[trait];
+      }
+    });
+  }
+
+  return sets;
+}
+
+async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) {
+  setting.rmOutputs &&
+    (await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch());
+
+  !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
+  !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
+
+  const cluster = _cluster as unknown as _cluster.Cluster;
+
+  cluster.setupPrimary({exec: './src/asset-generator.ts'});
+
+  for (let i = 1; i <= numCpus; i++) {
+    cluster.fork().send({channel: 'init', message: traitFilePaths});
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    try {
+      const progressBar = new ProgressBar(
+        'Generating [:bar] :percent, :current/:total assets, estimate: :rate asset per second, :etas left',
+        {total: sets.length, width: 50}
+      );
+
+      let setIndex = 0;
+
+      cluster.on('message', (worker, {channel}) => {
+        if (setIndex < sets.length) {
+          worker.send({channel: 'assign', message: {setIndex, set: sets[setIndex]}});
+          setIndex++;
+        }
+
+        if (channel === 'complete') progressBar.tick();
+        if (!progressBar.complete) return;
+
+        cluster.disconnect();
+        resolve();
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }

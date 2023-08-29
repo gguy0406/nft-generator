@@ -2,61 +2,63 @@ import * as _cluster from 'node:cluster';
 import {readFile, writeFile} from 'node:fs/promises';
 import * as path from 'path';
 
-import {Image, createCanvas, loadImage} from 'canvas';
+import {Image, PngConfig, createCanvas, loadImage} from 'canvas';
 
 import {TraitSet} from './set-generator/interface';
 
-import {numCPUs, outputDir, outputImageDir, outputMetadataDir} from './constant';
-import {TraitFilePaths} from './interface';
+import {outputImageDir, outputMetadataDir} from './constant';
+import {GeneratorChannel, TraitFilePaths} from './interface';
 import {setting} from './setting';
 
 type ColoredImage = {[colorSet: number]: Image};
 type ImageDictionary = {[filePath: string]: Image | ColoredImage};
 
-const cluster = _cluster as unknown as _cluster.Cluster;
-
 (async () => {
+  const cluster = _cluster as unknown as _cluster.Cluster;
+
   if (!cluster.worker) return;
 
-  const workerId = cluster.worker.id;
-  const sets: TraitSet[] = JSON.parse(await readFile(path.join(outputDir, 'sets.json'), 'utf-8'));
-  const filePaths: TraitFilePaths = JSON.parse(await readFile(path.join(outputDir, 'traitFilePaths.json'), 'utf-8'));
-  const numSetsEachWorker = Math.ceil(sets.length / numCPUs);
-  const startSetIndex = numSetsEachWorker * (workerId - 1);
-  const endSetIndex = startSetIndex + numSetsEachWorker;
-
-  await sleep(600 * (workerId - 1));
-  await generateAssets(sets.slice(startSetIndex, endSetIndex), filePaths, startSetIndex);
-  cluster.worker.disconnect();
-})();
-
-async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths, offset: number) {
-  const imgDict = await getImgDict(traitFilePaths);
+  const worker = cluster.worker;
   const pngConfig = {resolution: setting.resolution};
   const imgSize = setting.imgSize || 1520;
+  let imgDict: ImageDictionary;
 
-  return sets.reduce(async (previousSet: Promise<[void, void, boolean | undefined]> | undefined, currentSet, index) => {
-    if (previousSet) await previousSet;
-
-    await sleep(500);
-
-    const canvas = createCanvas(imgSize, imgSize);
-    const ctx = canvas.getContext('2d');
-    const colorSet = setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0;
-
-    for (const layer of Object.values(currentSet.layers)) {
-      ctx.drawImage((imgDict[layer] as ColoredImage)[colorSet] || (imgDict[layer] as Image), 0, 0, imgSize, imgSize);
+  worker.on('message', async ({channel, message}: GeneratorChannel) => {
+    switch (channel) {
+      case 'assign':
+        try {
+          await generateAssets(message.setIndex, message.set, imgDict, pngConfig, imgSize);
+        } catch {
+          console.error(message);
+        }
+        worker.send({channel: 'complete', message: null});
+        break;
+      case 'init':
+        imgDict = await getImgDict(message);
+        worker.send({channel: 'ready', message: null});
     }
+  });
+})();
 
-    return Promise.all([
-      writeFile(path.join(outputImageDir, `${offset + index + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
-      writeFile(
-        path.join(outputMetadataDir, `${offset + index + 1}.json`),
-        JSON.stringify(currentSet.traits, undefined, 2)
-      ),
-      Promise.resolve(cluster.worker!.send('')),
-    ]);
-  }, undefined);
+async function generateAssets(
+  setIndex: number,
+  set: TraitSet,
+  imgDict: ImageDictionary,
+  pngConfig: PngConfig,
+  imgSize: number
+) {
+  const canvas = createCanvas(imgSize, imgSize);
+  const ctx = canvas.getContext('2d');
+  const colorSet = setting.syncColor ? Math.floor(Math.random() * setting.syncColor.colorSets.length) : 0;
+
+  for (const layer of Object.values(set.layers)) {
+    ctx.drawImage((imgDict[layer] as ColoredImage)[colorSet] || (imgDict[layer] as Image), 0, 0, imgSize, imgSize);
+  }
+
+  return Promise.all([
+    writeFile(path.join(outputImageDir, `${setIndex + 1}.png`), canvas.toBuffer('image/png', pngConfig)),
+    writeFile(path.join(outputMetadataDir, `${setIndex + 1}.json`), JSON.stringify(set.traits, undefined, 2)),
+  ]);
 }
 
 async function getImgDict(traitFilePaths: TraitFilePaths) {
@@ -114,8 +116,4 @@ async function getImgDict(traitFilePaths: TraitFilePaths) {
 
 function getImgDictNormalTrait(imgDict: ImageDictionary, filePaths: string[]) {
   return Promise.all(filePaths.map(async filePath => (imgDict[filePath] = await loadImage(filePath))));
-}
-
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
