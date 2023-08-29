@@ -2,6 +2,7 @@ import {ConstraintSetting} from './set-generator/interface';
 
 export interface GeneratorSetting {
   resetOutputs?: boolean;
+  numWorker?: number;
   indexStep?: number;
   imgSize?: number;
   resolution?: number;

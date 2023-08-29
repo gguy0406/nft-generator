@@ -110,6 +110,9 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
   let setIndex = offset;
 
   const cluster = _cluster as unknown as _cluster.Cluster;
+  const numWorker = setting.numWorker
+    ? Math.min(availableParallelism(), setting.numWorker)
+    : Math.floor(availableParallelism() * 0.375);
   const progressBar = new ProgressBar(
     'Generating [:bar] :percent, :current/:total assets, estimate: :rate asset per second, :etas left',
     {total: sets.length, width: 50}
@@ -119,7 +122,7 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
 
   cluster.setupPrimary({exec: './src/asset-generator.ts'});
 
-  for (let i = 1; i <= Math.floor(availableParallelism() * 0.34); i++) {
+  for (let i = 1; i <= numWorker; i++) {
     cluster.fork().send({channel: 'init', message: traitFilePaths});
   }
 
