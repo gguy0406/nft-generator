@@ -150,7 +150,6 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
         }
 
         if (channel === 'complete') progressBar.tick();
-
         if (!progressBar.complete) return;
 
         cluster.disconnect();
