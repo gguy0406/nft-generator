@@ -28,34 +28,45 @@ export const setting: GeneratorSetting = {
   resetOutputs: true,
   // shuffling: true,
   indexStep: 100,
-  imgSize: 595.28,
+  imgSize: 2000,
   resolution: 150,
-  randomTimes: 10000,
+  randomTimes: 200,
   setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Hands', 'Accessories'],
-  // randomTraits: ['Background', 'Body'],
+  randomTraits: ['Background', 'Accessories'],
   // hiddenTraits: ['Background', 'Body', 'Ear'],
   syncColor: {
-    traits: ['Body', 'Head', 'Hands'],
+    traits: ['Body', 'Head', 'Face', 'Hands'],
     types: ['Main color', 'Shadow color'],
-    defaultSet: {'Main color': '#FEB8B0', 'Shadow color': '#BA828F'},
+    defaultSet: {'Main color': '#feb8b0', 'Shadow color': '#ba828f'},
     colorSets: [
-      {'Main color': '#FEB8B0', 'Shadow color': '#BA828F'},
-      {'Main color': '#F4CD98', 'Shadow color': '#DBA86B'},
-      {'Main color': '#EFAC5E', 'Shadow color': '#C17434'},
-      {'Main color': '#A56628', 'Shadow color': '#7F4B1C'},
+      {'Main color': '#feb8b0', 'Shadow color': '#ba828f'},
+      {'Main color': '#f4cd98', 'Shadow color': '#dba86b'},
+      {'Main color': '#efac5e', 'Shadow color': '#c17434'},
+      {'Main color': '#a56628', 'Shadow color': '#7f4b1c'},
     ],
   },
-  // constraintSetting: {
-  //   Ear: {Earrings: {disjoin: {Hand: ['Spinning']}}},
-  //   Face: {
-  //     StarFace: {
-  //       join: {Self: ['Evil', 'Planet']},
-  //       disjoin: {Hair: ['TiffanyCowboy']},
-  //     },
-  //   },
-  //   Hair: {CyanFuzz: {join: {Hand: ['BluePot']}}},
-  // },
+  constraintSetting: {
+    Accessories: {
+      Crown: {disjoin: {Hair: ['Beanie', 'Blue Messy Hair', 'Grey Bald', 'Orange Hair Horn', 'Orange Messy Hair']}},
+      'Kitsune Mask': {
+        disjoin: {Self: ['H2O Rubber Duck', 'Web Spider'], Hair: ['Orange Hair Horn'], Hands: ['basketball']},
+      },
+      Pencil: {disjoin: {Hair: ['Dreadlock 1', 'Long Yellow Hair'], Hands: ['basketball']}},
+      Piecings: {disjoin: {Hair: ['Dreadlock 2', 'Bob Hair'], Hands: ['basketball']}},
+    },
+    Hands: {
+      basketball: {disjoin: {Background: ['Rusty Orange']}},
+      Coffee: {disjoin: {Hair: ['Dreadlock 2', 'Orange Hair Horn']}},
+    },
+    Hair: {
+      'Blue Messy Hair': {disjoin: {Self: ['H2O Cat', 'H2O Fish', 'H2O Rubber Duck']}},
+      'Bob Hair': {disjoin: {Self: ['H2O Cat']}},
+    },
+    Self: {
+      'Web Spider': {disjoin: {Background: ['sky cloud']}},
+    },
+  },
 };
 
 // ch0pch0p c1 setting

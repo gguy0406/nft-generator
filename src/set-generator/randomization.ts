@@ -22,22 +22,33 @@ export function randomSetsWithConstraint(
   constraintSetting: ConstraintSetting,
   quantity: number = Math.random() * 10
 ): TraitSet[] {
+  const reversedTraits = traits.reverse();
+  const reversedElements = elements.reverse();
   const sets: TraitSet[] = [];
 
-  for (let i = 1; i <= quantity; i++) {
-    sets.push(
-      traits.reverse().reduce(
-        (set: Required<TraitSet>, trait, index) => {
-          const filteredElement = filterElementConstraint(set, trait, elements[index], constraintSetting);
-          const {randomElement} = assignRandomElement(set, trait, filteredElement);
+  while (sets.length < quantity) {
+    let valid: boolean = true;
+    const set = reversedTraits.reduce(
+      (set: Required<TraitSet>, trait, index) => {
+        if (!valid) return set;
 
-          set.constraint = addConstraint(trait, randomElement, constraintSetting, set.constraint);
+        const filteredElements = filterElementConstraint(set, trait, reversedElements[index], constraintSetting);
 
+        if (!filteredElements.length) {
+          valid = false;
           return set;
-        },
-        {traits: {}, layers: {}, constraint: {}}
-      )
+        }
+
+        const {randomElement} = assignRandomElement(set, trait, filteredElements);
+
+        set.constraint = addConstraint(trait, randomElement, constraintSetting, set.constraint);
+
+        return set;
+      },
+      {traits: {}, layers: {}, constraint: {}}
     );
+
+    valid && sets.push(set);
   }
 
   return sets;

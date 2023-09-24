@@ -114,11 +114,20 @@ export function multiplyTraitsWithConstraint(
 
     if (!~rdTraitIndex) return;
 
-    currentSets.forEach(set => {
-      const filteredElement = filterElementConstraint(set, rdTrait, elements[rdTraitIndex], constraintSetting);
+    const invalidSetIndexes: number[] = [];
 
-      assignRandomElement(set, trait, filteredElement);
+    currentSets.forEach((set, index) => {
+      const filteredElements = filterElementConstraint(set, rdTrait, elements[rdTraitIndex], constraintSetting);
+
+      if (elements[rdTraitIndex].length && !filteredElements.length) {
+        invalidSetIndexes.push(index);
+        return;
+      }
+
+      assignRandomElement(set, rdTrait, filteredElements);
     });
+
+    invalidSetIndexes.reverse().forEach(index => currentSets.splice(index, 1));
   });
 
   return currentSets;
