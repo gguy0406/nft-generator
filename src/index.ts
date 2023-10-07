@@ -67,6 +67,10 @@ async function getElements(traits: string[]) {
           else traitFilePaths[trait] = [filePath];
         });
 
+      if (setting.nullableTraits?.includes(trait)) {
+        elementDict['None'] = {};
+      }
+
       return Object.entries(elementDict).map(([element, layers]) => ({
         layers,
         name: element,
@@ -83,14 +87,26 @@ function generateSets(setting: GeneratorSetting, traits: string[], elements: Ele
   switch (setting.setsGenerator) {
     case 'multiplication':
       sets = setting.constraintSetting
-        ? multiplyTraitsWithConstraint(traits, elements, setting.constraintSetting, setting.randomTraits)
-        : multiplyTraits(traits, elements, setting.randomTraits);
+        ? multiplyTraitsWithConstraint(
+            traits,
+            elements,
+            setting.constraintSetting,
+            setting.randomTraits,
+            setting.raritySetting
+          )
+        : multiplyTraits(traits, elements, setting.randomTraits, setting.raritySetting);
       break;
     case 'randomization':
     default:
       sets = setting.constraintSetting
-        ? randomSetsWithConstraint(traits, elements, setting.constraintSetting, setting.randomTimes)
-        : randomSets(traits, elements, setting.randomTimes);
+        ? randomSetsWithConstraint(
+            traits,
+            elements,
+            setting.constraintSetting,
+            setting.randomTimes,
+            setting.raritySetting
+          )
+        : randomSets(traits, elements, setting.randomTimes, setting.raritySetting);
   }
 
   if (setting.shuffling) {

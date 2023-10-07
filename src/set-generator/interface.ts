@@ -16,3 +16,7 @@ export interface JoinConstraint {
 export interface DisjoinConstraint {
   disjoin: {[trait: string]: string[]};
 }
+
+export interface RaritySetting {
+  [trait: string]: {[element: string]: number};
+}

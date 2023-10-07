@@ -1,10 +1,11 @@
 import {addConstraint, assignRandomElement, filterElementConstraint} from './common';
-import {ConstraintSetting, ElementLayers, TraitSet} from './interface';
+import {ConstraintSetting, ElementLayers, RaritySetting, TraitSet} from './interface';
 
 export function multiplyTraits(
   traits: string[],
   elements: ElementLayers[][],
   randomTraits: string[] | undefined,
+  raritySetting: RaritySetting | undefined,
   traitIndex: number = 0,
   memoSet: {[trait: string]: TraitSet[]} = {}
 ): TraitSet[] {
@@ -16,7 +17,7 @@ export function multiplyTraits(
 
   const getSmallestSet = () =>
     elements[traitIndex].map(element => ({traits: {[trait]: element.name}, layers: element.layers}));
-  const getSmallerSet = () => multiplyTraits(traits, elements, randomTraits, traitIndex + 1, memoSet);
+  const getSmallerSet = () => multiplyTraits(traits, elements, randomTraits, raritySetting, traitIndex + 1, memoSet);
 
   if (randomTraits?.includes(trait)) {
     currentSets = traits[traitIndex + 1] ? getSmallerSet() : [];
@@ -47,7 +48,7 @@ export function multiplyTraits(
 
     if (!~rdTraitIndex) return;
 
-    currentSets.forEach(set => assignRandomElement(set, trait, elements[rdTraitIndex]));
+    currentSets.forEach(set => assignRandomElement(set, trait, elements[rdTraitIndex], raritySetting));
   });
 
   return currentSets;
@@ -58,6 +59,7 @@ export function multiplyTraitsWithConstraint(
   elements: ElementLayers[][],
   constraintSetting: ConstraintSetting,
   randomTraits: string[] | undefined,
+  raritySetting: RaritySetting | undefined,
   traitIndex: number = 0,
   memoSet: {[trait: string]: Required<TraitSet>[]} = {}
 ): Required<TraitSet>[] {
@@ -69,7 +71,15 @@ export function multiplyTraitsWithConstraint(
 
   const getSmallestSet = () => getSmallestSetWithConstraint(trait, elements[traitIndex], constraintSetting);
   const getSmallerSet = () =>
-    multiplyTraitsWithConstraint(traits, elements, constraintSetting, randomTraits, traitIndex + 1, memoSet);
+    multiplyTraitsWithConstraint(
+      traits,
+      elements,
+      constraintSetting,
+      randomTraits,
+      raritySetting,
+      traitIndex + 1,
+      memoSet
+    );
 
   if (randomTraits?.includes(trait)) {
     currentSets = traits[traitIndex + 1] ? getSmallerSet() : [];
@@ -124,7 +134,7 @@ export function multiplyTraitsWithConstraint(
         return;
       }
 
-      assignRandomElement(set, rdTrait, filteredElements);
+      assignRandomElement(set, rdTrait, filteredElements, raritySetting);
     });
 
     invalidSetIndexes.reverse().forEach(index => currentSets.splice(index, 1));

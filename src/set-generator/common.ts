@@ -1,13 +1,35 @@
-import {ConstraintSetting, ElementLayers, TraitSet} from './interface';
+import {ConstraintSetting, ElementLayers, RaritySetting, TraitSet} from './interface';
 
-// TODO: implement rarity
-export function assignRandomElement(set: TraitSet, trait: string, elements: ElementLayers[]) {
-  const randomElement = elements[Math.floor(Math.random() * elements.length)];
+export function assignRandomElement(
+  set: TraitSet,
+  trait: string,
+  elements: ElementLayers[],
+  raritySetting: RaritySetting | undefined
+) {
+  let randomElement: ElementLayers;
 
-  set.traits[trait] = randomElement.name;
-  set.layers = {...set.layers, ...randomElement.layers};
+  if (!raritySetting?.[trait]) randomElement = elements[Math.floor(Math.random() * elements.length)];
+  else {
+    const totalWeight = elements.reduce((total: number, element: ElementLayers) => {
+      return (total += raritySetting[trait][element.name] || 1);
+    }, 0);
+    const random = Math.floor(Math.random() * totalWeight);
+    let sum: number = 0;
 
-  return {set, randomElement};
+    for (const element of elements) {
+      sum += raritySetting[trait][element.name] || 1;
+
+      if (sum < random) continue;
+
+      randomElement = element;
+      break;
+    }
+  }
+
+  set.traits[trait] = randomElement!.name;
+  set.layers = {...set.layers, ...randomElement!.layers};
+
+  return {set, randomElement: randomElement!};
 }
 
 export function addConstraint(

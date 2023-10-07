@@ -1,4 +1,4 @@
-import {ConstraintSetting} from './set-generator/interface';
+import {ConstraintSetting, RaritySetting} from './set-generator/interface';
 
 export interface GeneratorSetting {
   resetOutputs?: boolean;
@@ -12,8 +12,10 @@ export interface GeneratorSetting {
   traits?: string[];
   randomTraits?: string[];
   hiddenTraits?: string[];
+  nullableTraits?: string[];
   syncColor?: ColorSetting;
   constraintSetting?: ConstraintSetting;
+  raritySetting?: RaritySetting;
 }
 
 export interface ColorSetting {
@@ -30,17 +32,18 @@ export const setting: GeneratorSetting = {
   indexStep: 100,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 200,
+  randomTimes: 50,
   setsGenerator: 'randomization',
-  traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Hands', 'Accessories'],
+  traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Accessories', 'Hands'],
   randomTraits: ['Background', 'Accessories'],
-  // hiddenTraits: ['Background', 'Body', 'Ear'],
+  // hiddenTraits: [],
+  nullableTraits: ['Accessories'],
   syncColor: {
     traits: ['Body', 'Head', 'Face', 'Hands'],
     types: ['Main color', 'Shadow color'],
-    defaultSet: {'Main color': '#feb8b0', 'Shadow color': '#ba828f'},
+    defaultSet: {'Main color': '#fbb5ad', 'Shadow color': '#f99e97'},
     colorSets: [
-      {'Main color': '#feb8b0', 'Shadow color': '#ba828f'},
+      {'Main color': '#fbb5ad', 'Shadow color': '#f99e97'},
       {'Main color': '#f4cd98', 'Shadow color': '#dba86b'},
       {'Main color': '#efac5e', 'Shadow color': '#c17434'},
       {'Main color': '#a56628', 'Shadow color': '#7f4b1c'},
@@ -48,25 +51,72 @@ export const setting: GeneratorSetting = {
   },
   constraintSetting: {
     Accessories: {
-      Crown: {disjoin: {Hair: ['Beanie', 'Blue Messy Hair', 'Grey Bald', 'Orange Hair Horn', 'Orange Messy Hair']}},
-      'Kitsune Mask': {
-        disjoin: {Self: ['H2O Rubber Duck', 'Web Spider'], Hair: ['Orange Hair Horn'], Hands: ['basketball']},
+      Crown: {
+        disjoin: {
+          Hair: [
+            'Blue Messy Hair',
+            'Half-bald',
+            'Bald',
+            'Orange Hair',
+            'Orange Messy Hair',
+            'Purple Beanie',
+            'Red Beanie',
+            'Dark Caesar',
+            'Short Black Dreadlock',
+            'Short Blonde Dreadlock',
+          ],
+        },
       },
-      Pencil: {disjoin: {Hair: ['Dreadlock 1', 'Long Yellow Hair'], Hands: ['basketball']}},
-      Piecings: {disjoin: {Hair: ['Dreadlock 2', 'Bob Hair'], Hands: ['basketball']}},
-    },
-    Hands: {
-      basketball: {disjoin: {Background: ['Rusty Orange']}},
-      Coffee: {disjoin: {Hair: ['Dreadlock 2', 'Orange Hair Horn']}},
+      'Angel Halo': {
+        disjoin: {
+          Hair: ['Half-bald', 'Bald', 'Dark Caesar'],
+        },
+      },
+      'Black Piercing': {
+        disjoin: {
+          Hair: ['Long Dreadlock', 'Bob Hair'],
+          Hands: ['Basketball and Soda', 'MP3 and Beer', 'MP3 and Boba'],
+        },
+      },
+      'Metal Piercing': {
+        disjoin: {
+          Hands: ['Basketball and Soda', 'MP3 and Beer', 'MP3 and Boba'],
+        },
+      },
+      'Neon Earring': {
+        disjoin: {
+          Hands: ['MP3 and Beer', 'MP3 and Boba'],
+        },
+      },
+      'Pearl Earring': {
+        disjoin: {
+          Hands: ['MP3 and Beer', 'MP3 and Boba'],
+        },
+      },
+      'Pink Earring': {
+        disjoin: {
+          Hands: ['MP3 and Beer', 'MP3 and Boba'],
+        },
+      },
+      'Kitsune Mask': {
+        disjoin: {Self: ['Duckie', 'Spider'], Hair: ['Orange Hair'], Hands: ['Basketball and Soda']},
+      },
+      Pencil: {
+        disjoin: {
+          Hair: ['Long Yellow Hair', 'Orange Curly Hair', 'Green Curly Hair', 'Green Hair Bun'],
+          Hands: ['Basketball and Soda', 'Ice Cream and Strawberry', 'Guitar'],
+        },
+      },
     },
     Hair: {
-      'Blue Messy Hair': {disjoin: {Self: ['H2O Cat', 'H2O Fish', 'H2O Rubber Duck']}},
-      'Bob Hair': {disjoin: {Self: ['H2O Cat']}},
+      'Blue Messy Hair': {disjoin: {Self: ['Diving Cat', 'Golden Fish', 'Duckie']}},
+      'Bob Hair': {disjoin: {Self: ['Diving Cat']}},
     },
     Self: {
-      'Web Spider': {disjoin: {Background: ['sky cloud']}},
+      Spider: {disjoin: {Background: ['Blue Sky']}},
     },
   },
+  raritySetting: {Body: {Kimono: 100, 'Honey Hoodie': 50}},
 };
 
 // ch0pch0p c1 setting

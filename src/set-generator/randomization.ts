@@ -1,15 +1,23 @@
 import {addConstraint, assignRandomElement, filterElementConstraint} from './common';
-import {ConstraintSetting, ElementLayers, TraitSet} from './interface';
+import {ConstraintSetting, ElementLayers, RaritySetting, TraitSet} from './interface';
 
-export function randomSets(traits: string[], elements: ElementLayers[][], quantity: number = 1): TraitSet[] {
+export function randomSets(
+  traits: string[],
+  elements: ElementLayers[][],
+  quantity: number = 1,
+  raritySetting: RaritySetting | undefined
+): TraitSet[] {
   const sets: TraitSet[] = [];
 
   for (let i = 1; i <= quantity; i++) {
     sets.push(
-      traits.reduce((set: TraitSet, trait, index) => assignRandomElement(set, trait, elements[index]).set, {
-        traits: {},
-        layers: {},
-      })
+      traits.reduce(
+        (set: TraitSet, trait, index) => assignRandomElement(set, trait, elements[index], raritySetting).set,
+        {
+          traits: {},
+          layers: {},
+        }
+      )
     );
   }
 
@@ -20,7 +28,8 @@ export function randomSetsWithConstraint(
   traits: string[],
   elements: ElementLayers[][],
   constraintSetting: ConstraintSetting,
-  quantity: number = Math.random() * 10
+  quantity: number = Math.random() * 10,
+  raritySetting: RaritySetting | undefined
 ): TraitSet[] {
   const reversedTraits = traits.reverse();
   const reversedElements = elements.reverse();
@@ -39,7 +48,7 @@ export function randomSetsWithConstraint(
           return set;
         }
 
-        const {randomElement} = assignRandomElement(set, trait, filteredElements);
+        const {randomElement} = assignRandomElement(set, trait, filteredElements, raritySetting);
 
         set.constraint = addConstraint(trait, randomElement, constraintSetting, set.constraint);
 
