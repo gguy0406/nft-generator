@@ -18,5 +18,6 @@ export interface DisjoinConstraint {
 }
 
 export interface RaritySetting {
-  [trait: string]: {[element: string]: number};
+  defaultWeight: number;
+  traits: {[trait: string]: {[element: string]: number}};
 }

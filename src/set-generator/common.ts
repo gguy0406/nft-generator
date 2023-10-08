@@ -8,16 +8,16 @@ export function assignRandomElement(
 ) {
   let randomElement: ElementLayers;
 
-  if (!raritySetting?.[trait]) randomElement = elements[Math.floor(Math.random() * elements.length)];
+  if (!raritySetting?.traits[trait]) randomElement = elements[Math.floor(Math.random() * elements.length)];
   else {
     const totalWeight = elements.reduce((total: number, element: ElementLayers) => {
-      return (total += raritySetting[trait][element.name] || 1);
+      return (total += raritySetting.traits[trait][element.name] || raritySetting.defaultWeight);
     }, 0);
     const random = Math.floor(Math.random() * totalWeight);
     let sum: number = 0;
 
     for (const element of elements) {
-      sum += raritySetting[trait][element.name] || 1;
+      sum += raritySetting.traits[trait][element.name] || raritySetting.defaultWeight;
 
       if (sum < random) continue;
 
@@ -70,7 +70,7 @@ export function filterElementConstraint(
       ? elements.filter(
           element =>
             !set.constraint[trait].disjoin?.includes(element.name) &&
-            (!set.constraint[trait].join || set.constraint[trait].join.includes(element.name))
+            (!set.constraint[trait].join.length || set.constraint[trait].join.includes(element.name))
         )
       : elements
   ).filter(element => {
@@ -80,7 +80,7 @@ export function filterElementConstraint(
       !eleConstr ||
       ((!('join' in eleConstr) ||
         Object.entries(eleConstr.join).every(
-          ([joinTrait, joinElements]) => set.traits[joinTrait] && joinElements.includes(set.traits[joinTrait])
+          ([joinTrait, joinElements]) => !set.traits[joinTrait] || joinElements.includes(set.traits[joinTrait])
         )) &&
         (!('disjoin' in eleConstr) ||
           Object.entries(eleConstr.disjoin).every(

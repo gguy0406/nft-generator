@@ -2,6 +2,7 @@ import {ConstraintSetting, RaritySetting} from './set-generator/interface';
 
 export interface GeneratorSetting {
   resetOutputs?: boolean;
+  checkOutputSets?: boolean;
   shuffling?: boolean;
   numWorker?: number;
   indexStep?: number;
@@ -12,7 +13,7 @@ export interface GeneratorSetting {
   traits?: string[];
   randomTraits?: string[];
   hiddenTraits?: string[];
-  nullableTraits?: string[];
+  canBeEmptyTraits?: string[];
   syncColor?: ColorSetting;
   constraintSetting?: ConstraintSetting;
   raritySetting?: RaritySetting;
@@ -22,101 +23,229 @@ export interface ColorSetting {
   traits: string[];
   types: string[];
   defaultSet: Record<ColorSetting['types'][number], string>;
-  colorSets: Array<ColorSetting['defaultSet']>;
+  colorSets: Array<ColorSetting['defaultSet'] & {name: string}>;
 }
+
+const earAccessories = ['Black Piercing', 'Metal Piercing', 'Neon Earring', 'Pearl Earring', 'Pink Earring'];
+const shortHair = ['Bald', 'Half-bald', 'Dark Caesar'];
+const boyHair = ['Blonde Quiff', 'Red Mohawk', 'Bald', 'Half-bald', 'Green Messy Hair', 'Orange Messy Hair'];
+const girlyAndUnisexHair = [
+  // girly
+  'Bob Hair',
+  'Green Hair Bun',
+  'Orange Hair and Horn',
+  'Long Blue Hair',
+  'Long Yellow Hair',
+
+  // unisex
+  'Dark Caesar',
+  'Long Dreadlock',
+  'Sponge Curl',
+  'Purple Beanie',
+  'Red Beanie',
+  'Green Curly Hair',
+  'Orange Curly Hair',
+  // 'Short Black Dreadlock',
+  'Short Blonde Dreadlock',
+  'Black Nerd',
+  // 'Blonde Nerd',
+];
+const longSleevesBody = [
+  'Blue Whale Jacket and Deep Aqua Shirt',
+  'Hogwarts Uniform',
+  'Black Bomber Jacket and Croptop',
+  'Purple and Yellow Bomber Jacket and Croptop',
+  'Gray Hoodie',
+  'Honey Hoodie',
+  'Light Blue Puffer Jacket',
+  'Orange Puffer Jacket',
+  'Navy Blue Suit and Bow',
+  'Suit and Tie',
+  'Christmas Sweatshirt',
+  'Green Sweatshirt',
+];
 
 // ch0pch0p c0 setting
 export const setting: GeneratorSetting = {
   resetOutputs: true,
+  checkOutputSets: true,
   // shuffling: true,
   indexStep: 100,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 50,
+  randomTimes: 10000,
   setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Accessories', 'Hands'],
   randomTraits: ['Background', 'Accessories'],
-  // hiddenTraits: [],
-  nullableTraits: ['Accessories'],
+  hiddenTraits: ['Head'],
+  canBeEmptyTraits: ['Accessories'],
   syncColor: {
     traits: ['Body', 'Head', 'Face', 'Hands'],
     types: ['Main color', 'Shadow color'],
     defaultSet: {'Main color': '#fbb5ad', 'Shadow color': '#f99e97'},
     colorSets: [
-      {'Main color': '#fbb5ad', 'Shadow color': '#f99e97'},
-      {'Main color': '#f4cd98', 'Shadow color': '#dba86b'},
-      {'Main color': '#efac5e', 'Shadow color': '#c17434'},
-      {'Main color': '#a56628', 'Shadow color': '#7f4b1c'},
+      {name: 'Fair', 'Main color': '#fbb5ad', 'Shadow color': '#f99e97'},
+      {name: 'Golden', 'Main color': '#efac5e', 'Shadow color': '#dd934a'},
+      {name: 'Umber', 'Main color': '#a56628', 'Shadow color': '#935721'},
     ],
   },
   constraintSetting: {
+    Hands: {
+      'Basketball and Soda': {
+        disjoin: {
+          Accessories: ['Black Piercing', 'Metal Piercing', 'Kitsune Mask', 'Pencil'],
+        },
+      },
+      Flashlight: {
+        join: {
+          Accessories: ['Empty'],
+        },
+      },
+      'MP3 and Beer': {
+        disjoin: {
+          Accessories: earAccessories,
+          Body: longSleevesBody,
+        },
+      },
+      'MP3 and Boba': {
+        disjoin: {
+          Accessories: earAccessories,
+        },
+      },
+      'Ice Cream and Strawberry': {
+        disjoin: {
+          Accessories: ['Pencil'],
+        },
+      },
+      Guitar: {
+        disjoin: {
+          Accessories: ['Pencil'],
+        },
+      },
+    },
     Accessories: {
+      'Angel Halo': {
+        disjoin: {
+          Hair: shortHair,
+        },
+      },
       Crown: {
         disjoin: {
           Hair: [
+            ...shortHair,
+            'Orange Hair and Horn',
             'Blue Messy Hair',
-            'Half-bald',
-            'Bald',
-            'Orange Hair',
             'Orange Messy Hair',
             'Purple Beanie',
             'Red Beanie',
-            'Dark Caesar',
             'Short Black Dreadlock',
             'Short Blonde Dreadlock',
           ],
         },
       },
-      'Angel Halo': {
-        disjoin: {
-          Hair: ['Half-bald', 'Bald', 'Dark Caesar'],
-        },
-      },
       'Black Piercing': {
         disjoin: {
           Hair: ['Long Dreadlock', 'Bob Hair'],
-          Hands: ['Basketball and Soda', 'MP3 and Beer', 'MP3 and Boba'],
+          Skin: ['Umber'],
         },
       },
-      'Metal Piercing': {
-        disjoin: {
-          Hands: ['Basketball and Soda', 'MP3 and Beer', 'MP3 and Boba'],
+      'Kitsune Mask': {
+        join: {
+          Body: ['Kimono'],
         },
-      },
-      'Neon Earring': {
         disjoin: {
-          Hands: ['MP3 and Beer', 'MP3 and Boba'],
+          Hair: ['Orange Hair and Horn'],
+          Self: ['Duckie', 'Spider'],
         },
       },
       'Pearl Earring': {
         disjoin: {
-          Hands: ['MP3 and Beer', 'MP3 and Boba'],
+          Hair: boyHair,
+        },
+      },
+      Pencil: {
+        disjoin: {
+          Hair: ['Green Hair Bun', 'Long Blue Hair', 'Long Yellow Hair', 'Green Curly Hair', 'Orange Curly Hair'],
         },
       },
       'Pink Earring': {
         disjoin: {
-          Hands: ['MP3 and Beer', 'MP3 and Boba'],
-        },
-      },
-      'Kitsune Mask': {
-        disjoin: {Self: ['Duckie', 'Spider'], Hair: ['Orange Hair'], Hands: ['Basketball and Soda']},
-      },
-      Pencil: {
-        disjoin: {
-          Hair: ['Long Yellow Hair', 'Orange Curly Hair', 'Green Curly Hair', 'Green Hair Bun'],
-          Hands: ['Basketball and Soda', 'Ice Cream and Strawberry', 'Guitar'],
+          Hair: boyHair,
         },
       },
     },
     Hair: {
-      'Blue Messy Hair': {disjoin: {Self: ['Diving Cat', 'Golden Fish', 'Duckie']}},
-      'Bob Hair': {disjoin: {Self: ['Diving Cat']}},
+      'Blue Messy Hair': {
+        disjoin: {
+          Self: ['Diving Cat', 'Golden Fish', 'Duckie'],
+        },
+      },
+      'Bob Hair': {
+        disjoin: {
+          Self: ['Diving Cat'],
+        },
+      },
     },
     Self: {
-      Spider: {disjoin: {Background: ['Blue Sky']}},
+      Spider: {
+        disjoin: {
+          Background: ['Blue Sky'],
+        },
+      },
+    },
+    Body: {
+      'Black Bomber Jacket and Croptop': {
+        join: {
+          Hair: girlyAndUnisexHair,
+        },
+      },
+      Kimono: {
+        join: {
+          Accessories: ['Empty', 'Kitsune Mask'],
+          Hair: girlyAndUnisexHair,
+        },
+      },
+      'Light Blue Puffer Jacket': {
+        disjoin: {
+          Background: ['Purple Sky'],
+        },
+      },
+      'Pink Dress with Flower': {
+        join: {
+          Hair: girlyAndUnisexHair,
+        },
+      },
+      'Purple and Yellow Bomber Jacket and Croptop': {
+        join: {
+          Hair: girlyAndUnisexHair,
+        },
+      },
+      'Purple Dress with Flower': {
+        join: {
+          Hair: girlyAndUnisexHair,
+        },
+      },
+      'Purple Jumpsuit and White Shirt': {
+        join: {
+          Hair: girlyAndUnisexHair,
+        },
+      },
     },
   },
-  raritySetting: {Body: {Kimono: 100, 'Honey Hoodie': 50}},
+  raritySetting: {
+    defaultWeight: 1000,
+    traits: {
+      Hair: {
+        'Half-bald': 200,
+      },
+      Body: {
+        'Christmas Sweatshirt': 200,
+      },
+      Skin: {
+        Umber: 500,
+      },
+    },
+  },
 };
 
 // ch0pch0p c1 setting

@@ -25,6 +25,25 @@ async function main() {
   process.stdout.write(`Generate ${sets.length} `);
   console.timeEnd('sets');
 
+  if (setting.checkOutputSets) {
+    const elementCount: {[trait: string]: {[element: string]: number}} = {};
+
+    Object.keys(sets[0].traits).forEach(trait => (elementCount[trait] = {}));
+
+    sets.forEach(({traits}) =>
+      Object.entries(traits).forEach(([trait, element]) => {
+        if (!elementCount[trait][element]) elementCount[trait][element] = 1;
+        else elementCount[trait][element] += 1;
+      })
+    );
+
+    traits.forEach((trait, index) => {
+      if (setting.hiddenTraits?.includes(trait)) return;
+
+      elements[index].forEach(({name}) => console.log(trait, name, elementCount[trait][name]));
+    });
+  }
+
   console.time('Generate assets');
   await generateAssets(sets, traitFilePaths);
   console.timeEnd('Generate assets');
@@ -67,8 +86,8 @@ async function getElements(traits: string[]) {
           else traitFilePaths[trait] = [filePath];
         });
 
-      if (setting.nullableTraits?.includes(trait)) {
-        elementDict['None'] = {};
+      if (setting.canBeEmptyTraits?.includes(trait)) {
+        elementDict['Empty'] = {};
       }
 
       return Object.entries(elementDict).map(([element, layers]) => ({
