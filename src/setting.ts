@@ -1,31 +1,6 @@
-import {ConstraintSetting, RaritySetting} from './set-generator/interface';
+import {GeneratorSetting} from './generator.interface';
 
-export interface GeneratorSetting {
-  resetOutputs?: boolean;
-  checkOutputSets?: boolean;
-  shuffling?: boolean;
-  numWorker?: number;
-  indexStep?: number;
-  imgSize?: number;
-  resolution?: number;
-  randomTimes?: number;
-  setsGenerator?: 'multiplication' | 'randomization';
-  traits?: string[];
-  randomTraits?: string[];
-  hiddenTraits?: string[];
-  canBeEmptyTraits?: string[];
-  syncColor?: ColorSetting;
-  constraintSetting?: ConstraintSetting;
-  raritySetting?: RaritySetting;
-}
-
-export interface ColorSetting {
-  traits: string[];
-  types: string[];
-  defaultSet: Record<ColorSetting['types'][number], string>;
-  colorSets: Array<ColorSetting['defaultSet'] & {name: string}>;
-}
-
+// ch0pch0p c0 setting
 const earAccessories = ['Black Piercing', 'Metal Piercing', 'Neon Earring', 'Pearl Earring', 'Pink Earring'];
 const shortHair = ['Bald', 'Half-bald', 'Dark Caesar'];
 const boyHair = ['Blonde Quiff', 'Red Mohawk', 'Bald', 'Half-bald', 'Green Messy Hair', 'Orange Messy Hair'];
@@ -65,15 +40,14 @@ const longSleevesBody = [
   'Green Sweatshirt',
 ];
 
-// ch0pch0p c0 setting
 export const setting: GeneratorSetting = {
   resetOutputs: true,
-  checkOutputSets: true,
+  // checkOutputSets: true,
   // shuffling: true,
   indexStep: 100,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 10000,
+  randomTimes: 100,
   setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Accessories', 'Hands'],
   randomTraits: ['Background', 'Accessories'],

@@ -7,8 +7,9 @@ import {Image, PngConfig, createCanvas, loadImage} from 'canvas';
 import {TraitSet} from './set-generator/interface';
 
 import {outputImageDir, outputMetadataDir} from './constant';
-import {GeneratorChannel, TraitFilePaths} from './interface';
-import {ColorSetting, setting} from './setting';
+import {GeneratorChannel, TraitFilePaths} from './app.interface';
+import {ColorSetting} from './generator.interface';
+import {setting} from './setting';
 
 type ColoredImage = {[colorSet: number]: Image};
 type ImageDictionary = {[filePath: string]: Image | ColoredImage};

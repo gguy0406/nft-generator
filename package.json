@@ -28,5 +28,8 @@
   "dependencies": {
     "canvas": "^2.11.2",
     "progress": "^2.0.3"
+  },
+  "engines": {
+    "node": ">=12.9.0"
   }
 }

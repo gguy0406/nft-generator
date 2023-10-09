@@ -10,8 +10,9 @@ import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/mult
 import {randomSets, randomSetsWithConstraint} from './set-generator/randomization';
 
 import {traitsDir, outputImageDir, outputMetadataDir} from './constant';
-import {TraitFilePaths} from './interface';
-import {GeneratorSetting, setting} from './setting';
+import {TraitFilePaths} from './app.interface';
+import {GeneratorSetting} from './generator.interface';
+import {setting} from './setting';
 
 main();
 
@@ -197,15 +198,16 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
 }
 
 async function prepareOutputDir() {
+  const outputImageDirExist = existsSync(outputImageDir);
   let offset = 0;
 
   if (setting.resetOutputs) {
-    await Promise.all([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]).catch();
-  } else {
+    await Promise.allSettled([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]);
+  } else if (outputImageDirExist) {
     offset = Math.max(...(await readdir(outputImageDir)).map(file => Number(path.basename(file))));
   }
 
-  !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
+  !outputImageDirExist && (await mkdir(outputImageDir, {recursive: true}));
   !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
 
   return offset;
