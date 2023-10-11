@@ -20,10 +20,10 @@ const girlyAndUnisexHair = [
   'Red Beanie',
   'Green Curly Hair',
   'Orange Curly Hair',
-  // 'Short Black Dreadlock',
+  'Short Black Dreadlock',
   'Short Blonde Dreadlock',
   'Black Nerd',
-  // 'Blonde Nerd',
+  'Blonde Nerd',
 ];
 const longSleevesBody = [
   'Blue Whale Jacket and Deep Aqua Shirt',
@@ -42,12 +42,12 @@ const longSleevesBody = [
 
 export const setting: GeneratorSetting = {
   resetOutputs: true,
-  // checkOutputSets: true,
+  checkOutputSets: true,
   // shuffling: true,
   indexStep: 100,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 100,
+  randomTimes: 10000,
   setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Accessories', 'Hands'],
   randomTraits: ['Background', 'Accessories'],
@@ -108,6 +108,7 @@ export const setting: GeneratorSetting = {
           Hair: [
             ...shortHair,
             'Orange Hair and Horn',
+            'Red Mohawk',
             'Blue Messy Hair',
             'Orange Messy Hair',
             'Purple Beanie',
@@ -209,11 +210,34 @@ export const setting: GeneratorSetting = {
   raritySetting: {
     defaultWeight: 1000,
     traits: {
+      Hands: {
+        'Hands up': 2000,
+        'Okie Dokie': 2000,
+        Espresso: 2000,
+        Fck: 2000,
+        Hi: 2000,
+        LFG: 2000,
+      },
       Hair: {
         'Half-bald': 200,
       },
       Body: {
         'Christmas Sweatshirt': 200,
+        'Dark Red Polo': 500,
+        'Green Polo Shirt': 500,
+        'Peace T-shirt': 500,
+        'Black Shirt with Stargaze Logo': 500,
+        'White Shirt with Ch0pch0p Logo': 500,
+      },
+      Background: {
+        'Blue Sky': 2000,
+        'Columbia Blue': 2000,
+        'Golden Glow': 2000,
+        'Light Salmon': 2000,
+        'Melrose Light': 2000,
+        'Payton Green': 2000,
+        'Saffron Mango': 2000,
+        Grey: 2000,
       },
       Skin: {
         Umber: 500,

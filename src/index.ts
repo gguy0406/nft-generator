@@ -9,7 +9,7 @@ import {ElementLayers, TraitSet} from './set-generator/interface';
 import {multiplyTraits, multiplyTraitsWithConstraint} from './set-generator/multiplication';
 import {randomSets, randomSetsWithConstraint} from './set-generator/randomization';
 
-import {traitsDir, outputImageDir, outputMetadataDir} from './constant';
+import {traitsDir, outputImageDir, outputMetadataDir, outputDir} from './constant';
 import {TraitFilePaths} from './app.interface';
 import {GeneratorSetting} from './generator.interface';
 import {setting} from './setting';
@@ -198,16 +198,15 @@ async function generateAssets(sets: TraitSet[], traitFilePaths: TraitFilePaths) 
 }
 
 async function prepareOutputDir() {
-  const outputImageDirExist = existsSync(outputImageDir);
   let offset = 0;
 
   if (setting.resetOutputs) {
-    await Promise.allSettled([rm(outputImageDir, {recursive: true}), rm(outputMetadataDir, {recursive: true})]);
-  } else if (outputImageDirExist) {
+    await rm(outputDir, {recursive: true}).catch(() => {});
+  } else if (existsSync(outputImageDir)) {
     offset = Math.max(...(await readdir(outputImageDir)).map(file => Number(path.basename(file))));
   }
 
-  !outputImageDirExist && (await mkdir(outputImageDir, {recursive: true}));
+  !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
   !existsSync(outputMetadataDir) && (await mkdir(outputMetadataDir));
 
   return offset;
