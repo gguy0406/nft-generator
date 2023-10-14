@@ -26,15 +26,15 @@ const girlyAndUnisexHair = [
   'Blonde Nerd',
 ];
 const longSleevesBody = [
-  'Blue Whale Jacket and Deep Aqua Shirt',
-  'Hogwarts Uniform',
-  'Black Bomber Jacket and Croptop',
-  'Purple and Yellow Bomber Jacket and Croptop',
+  'Blue Whale Jacket',
+  'Student Clothes',
+  'Black Bomber',
+  'Purple Bomber',
   'Gray Hoodie',
   'Honey Hoodie',
-  'Light Blue Puffer Jacket',
-  'Orange Puffer Jacket',
-  'Navy Blue Suit and Bow',
+  'Light Blue Puffer',
+  'Orange Puffer',
+  'Suit and Bow',
   'Suit and Tie',
   'Christmas Sweatshirt',
   'Green Sweatshirt',
@@ -47,7 +47,7 @@ export const setting: GeneratorSetting = {
   indexStep: 100,
   imgSize: 2000,
   resolution: 150,
-  randomTimes: 10000,
+  randomTimes: 1000,
   setsGenerator: 'randomization',
   traits: ['Background', 'Body', 'Self', 'Head', 'Face', 'Hair', 'Accessories', 'Hands'],
   randomTraits: ['Background', 'Accessories'],
@@ -169,7 +169,7 @@ export const setting: GeneratorSetting = {
       },
     },
     Body: {
-      'Black Bomber Jacket and Croptop': {
+      'Black Bomber': {
         join: {
           Hair: girlyAndUnisexHair,
         },
@@ -180,27 +180,27 @@ export const setting: GeneratorSetting = {
           Hair: girlyAndUnisexHair,
         },
       },
-      'Light Blue Puffer Jacket': {
+      'Light Blue Puffer': {
         disjoin: {
           Background: ['Purple Sky'],
         },
       },
-      'Pink Dress with Flower': {
+      'Pink Dress': {
         join: {
           Hair: girlyAndUnisexHair,
         },
       },
-      'Purple and Yellow Bomber Jacket and Croptop': {
+      'Purple Bomber': {
         join: {
           Hair: girlyAndUnisexHair,
         },
       },
-      'Purple Dress with Flower': {
+      'Purple Dress': {
         join: {
           Hair: girlyAndUnisexHair,
         },
       },
-      'Purple Jumpsuit and White Shirt': {
+      'Purple Jumpsuit': {
         join: {
           Hair: girlyAndUnisexHair,
         },
@@ -218,16 +218,20 @@ export const setting: GeneratorSetting = {
         Hi: 2000,
         LFG: 2000,
       },
+      Accessories: {
+        'Kitsune Mask': 500,
+      },
       Hair: {
-        'Half-bald': 200,
+        'Half-bald': 300,
       },
       Body: {
-        'Christmas Sweatshirt': 200,
-        'Dark Red Polo': 500,
-        'Green Polo Shirt': 500,
+        'Christmas Sweatshirt': 300,
+        'Red Polo': 500,
+        'Green Polo': 500,
         'Peace T-shirt': 500,
-        'Black Shirt with Stargaze Logo': 500,
-        'White Shirt with Ch0pch0p Logo': 500,
+        'Stargaze T-Shirt': 500,
+        'ch0pch0p T-Shirt': 500,
+        // Kimono: 100,
       },
       Background: {
         'Blue Sky': 2000,
