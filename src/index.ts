@@ -203,7 +203,7 @@ async function prepareOutputDir() {
   if (setting.resetOutputs) {
     await rm(outputDir, {recursive: true}).catch(() => {});
   } else if (existsSync(outputImageDir)) {
-    offset = Math.max(...(await readdir(outputImageDir)).map(file => Number(path.basename(file))));
+    offset = Math.max(...(await readdir(outputImageDir)).map(file => Number(path.basename(file, path.extname(file)))));
   }
 
   !existsSync(outputImageDir) && (await mkdir(outputImageDir, {recursive: true}));
