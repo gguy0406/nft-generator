@@ -260,7 +260,7 @@ export const setting: GeneratorSetting = {
   resolution: 150,
   randomTimes: 1000,
   setsGenerator: 'randomization',
-  traits: ['Background', 'Body', 'Clothes', 'Hand', 'Self', 'Head', 'Hair', 'Ear', 'Eyes', 'Nose'],
+  traits: ['Background', 'Body', 'Clothes', 'Hand', 'Self', 'Head', 'Hair', 'Eyes', 'Ear', 'Nose'],
   // randomTraits: ['Background', 'Accessories'],
   hiddenTraits: ['Ear', 'Nose'],
   // canBeEmptyTraits: ['Accessories'],
