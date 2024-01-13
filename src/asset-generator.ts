@@ -76,7 +76,7 @@ function getColorSet(set: TraitSet) {
     const randomSet = colorSets[Math.floor(Math.random() * colorSets.length)];
     const randomSetIndex = setting.syncColor.colorSets.findIndex(colorSet => colorSet === randomSet);
 
-    return {colorSetIndex: randomSetIndex, skin: ''};
+    return {colorSetIndex: randomSetIndex, skin: randomSet.name};
   }
 
   let randomColorSet: ColorSetting['colorSets'][number];
