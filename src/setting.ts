@@ -253,14 +253,14 @@ import {GeneratorSetting} from './generator.interface';
 // ch0pch0p c1 setting
 export const setting: GeneratorSetting = {
   resetOutputs: true,
-  // checkOutputSets: true,
+  checkOutputSets: true,
   // shuffling: true,
-  indexStep: 200,
+  indexStep: 100,
   imgSize: 2000,
   resolution: 150,
   randomTimes: 1000,
   setsGenerator: 'randomization',
-  traits: ['Background', 'Body', 'Clothes', 'Hand', 'Self', 'Head', 'Hair', 'Eyes', 'Ear', 'Nose'],
+  traits: ['Background', 'Body', 'Clothes', 'Self', 'Hand', 'Head', 'Hair', 'Face', 'Ear', 'Nose'],
   // randomTraits: ['Background', 'Accessories'],
   hiddenTraits: ['Ear', 'Nose'],
   // canBeEmptyTraits: ['Accessories'],
