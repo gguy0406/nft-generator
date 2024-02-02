@@ -21,6 +21,3 @@ node_modules/
 
 # Asset
 collection/
-
-# Setting
-src/setting.ts
