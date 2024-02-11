@@ -278,7 +278,165 @@ export const setting: GeneratorSetting = {
     ],
   },
   constraintSetting: {
+    Body: {
+      Bigfoot: {
+        join: {
+          Clothes: ['Bigfoot'],
+        },
+      },
+      'Bigfoot 1': {
+        join: {
+          Clothes: ['Bigfoot 1'],
+        },
+      },
+      'Coat Rack': {
+        join: {
+          Clothes: ['Coat Rack'],
+        },
+      },
+      'Coat Rack 1': {
+        join: {
+          Clothes: ['Coat Rack 1'],
+        },
+      },
+      'Coat Rack 2': {
+        join: {
+          Clothes: ['Coat Rack 2'],
+        },
+      },
+      'Coat Rack 3': {
+        join: {
+          Clothes: ['Coat Rack 3'],
+        },
+      },
+      Frog: {
+        join: {
+          Hand: ['Frog'],
+        },
+      },
+      'Frog 1': {
+        join: {
+          Hand: ['Frog 1'],
+        },
+      },
+      'Frog 2': {
+        join: {
+          Hand: ['Frog 2'],
+        },
+      },
+      Squid: {
+        join: {
+          Hand: ['Squid'],
+        },
+      },
+      'Squid 1': {
+        join: {
+          Hand: ['Squid 1'],
+        },
+      },
+      'Squid 2': {
+        join: {
+          Hand: ['Squid 2'],
+        },
+      },
+    },
+    Clothes: {
+      Bigfoot: {
+        join: {
+          Body: ['Bigfoot'],
+        },
+      },
+      'Bigfoot 1': {
+        join: {
+          Body: ['Bigfoot 1'],
+        },
+      },
+      'Coat Rack': {
+        join: {
+          Body: ['Coat Rack'],
+          Self: ['Empty'],
+        },
+      },
+      'Coat Rack 1': {
+        join: {
+          Body: ['Coat Rack 1'],
+          Self: ['Empty'],
+        },
+      },
+      'Coat Rack 2': {
+        join: {
+          Body: ['Coat Rack 2'],
+          Self: ['Empty'],
+        },
+      },
+      'Coat Rack 3': {
+        join: {
+          Body: ['Coat Rack 3'],
+          Self: ['Empty'],
+        },
+      },
+      Elephant: {
+        join: {
+          Hand: ['Elephant', 'Elephant-1', 'Elephant-2'],
+        },
+      },
+      'Elephant 1': {
+        join: {
+          Hand: ['Elephant', 'Elephant-1', 'Elephant-2'],
+        },
+      },
+      Frog: {
+        join: {
+          Body: ['Frog'],
+        },
+      },
+      'Frog 1': {
+        join: {
+          Body: ['Frog 1'],
+        },
+      },
+      'Frog 2': {
+        join: {
+          Body: ['Frog 2'],
+        },
+      },
+      Squid: {
+        join: {
+          Body: ['Squid'],
+        },
+      },
+      'Squid 1': {
+        join: {
+          Body: ['Squid 1'],
+        },
+      },
+      'Squid 2': {
+        join: {
+          Body: ['Squid 2'],
+        },
+      },
+    },
     Face: {
+      '@@ 1': {
+        disjoin: {
+          Hair: ['Chad'],
+        },
+      },
+      '@@ 2': {
+        disjoin: {
+          Hair: ['Chad'],
+        },
+      },
+      '3D Glasses 1': {
+        disjoin: {
+          Hair: ['Snapback'],
+        },
+      },
+      '3D Glasses 2': {
+        disjoin: {
+          Hair: ['Snapback'],
+        },
+      },
       'Haunted 1': {
         disjoin: {
           Hair: ['Cap Backward', 'Snap back', 'Scholarly'],
@@ -287,6 +445,113 @@ export const setting: GeneratorSetting = {
       'Haunted 2': {
         disjoin: {
           Hair: ['Cap Backward', 'Snap back', 'Scholarly'],
+        },
+      },
+      'Hungry 1': {
+        disjoin: {
+          Hair: ['Fringe'],
+        },
+      },
+      'Hungry 2': {
+        disjoin: {
+          Hair: ['Fringe'],
+        },
+      },
+      'Girly 1': {
+        disjoin: {
+          Hair: ['Cap Backward'],
+        },
+      },
+      'Girly 2': {
+        disjoin: {
+          Hair: ['Cap Backward'],
+        },
+      },
+      'Gum Girl 1': {
+        disjoin: {
+          Hair: ['Scholarly', 'Snapback'],
+          Self: ['Dishets'],
+        },
+      },
+      'Gum Girl 2': {
+        disjoin: {
+          Hair: ['Snapback'],
+          Self: ['Dishets'],
+        },
+      },
+      'Smoking 1': {
+        disjoin: {
+          Self: ['Dishets', 'Pizzaboard'],
+        },
+      },
+      'Smoking 2': {
+        disjoin: {
+          Self: ['Dishets', 'Pizzaboard'],
+        },
+      },
+    },
+    Hair: {
+      Cowboy: {
+        disjoin: {
+          Self: ['Baguette Roller', 'Fishantern'],
+        },
+      },
+      Fringe: {
+        disjoin: {
+          Self: ['Bug Brain', 'Pilleat'],
+        },
+      },
+      'Wizard of 0': {
+        disjoin: {
+          Self: ['Baguette Roller', 'Fishantern', 'Rubikecream'],
+        },
+      },
+    },
+    Hand: {
+      Frog: {
+        join: {
+          Clothes: ['Frog'],
+        },
+      },
+      'Frog 1': {
+        join: {
+          Clothes: ['Frog 1'],
+        },
+      },
+      'Frog 2': {
+        join: {
+          Clothes: ['Frog 2'],
+        },
+      },
+      Squid: {
+        join: {
+          Clothes: ['Squid'],
+          Self: ['Empty'],
+        },
+      },
+      'Squid 1': {
+        join: {
+          Clothes: ['Squid 1'],
+          Self: ['Empty'],
+        },
+      },
+      'Squid 2': {
+        join: {
+          Clothes: ['Squid 2'],
+          Self: ['Empty'],
+        },
+      },
+    },
+    Self: {
+      Dumbookie: {
+        disjoin: {
+          Face: ['Love 1', 'Love 2'],
+          Hair: ['Snapback'],
+        },
+      },
+      Empty: {
+        join: {
+          Body: ['Coat Rack', 'Coat Rack 1', 'Coat Rack 2', 'Coat Rack 3', 'Squid', 'Squid 1', 'Squid 2'],
         },
       },
     },
@@ -405,6 +670,7 @@ export const setting: GeneratorSetting = {
         Asian: 800,
         'Asymmetrical Bob': 800,
         'Baddest But Green': 400,
+        Balloon: 400,
         Bandana: 600,
         Beret: 600,
         'Clown Hat': 800,
@@ -413,6 +679,7 @@ export const setting: GeneratorSetting = {
         Egg: 400,
         'Evil Love': 400,
         'Finger Wave': 600,
+        Fur: 800,
         'Grim Reaper': 400,
         Masking: 400,
         Master: 600,
@@ -434,10 +701,16 @@ export const setting: GeneratorSetting = {
       },
       Hand: {
         'Fishing Rod': 400,
+        Frog: 200,
+        'Frog 1': 200,
+        'Frog 2': 200,
         Lance: 800,
         'Magic Wand': 800,
         Pirates: 400,
         Plug: 800,
+        Squid: 200,
+        'Squid 1': 200,
+        'Squid 2': 200,
       },
       Self: {
         Alien: 200,
@@ -452,6 +725,7 @@ export const setting: GeneratorSetting = {
         Crownaloe: 400,
         Diamoond: 700,
         Eggcoin: 200,
+        Empty: 30000,
         'Evil Teeth': 700,
         'Failed Cup': 400,
         Heartookie: 700,
